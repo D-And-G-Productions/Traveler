@@ -7,4 +7,4 @@ PARENT_DIRECTORY="$SCRIPT_DIRECTORY/.."
 cd "$PARENT_DIRECTORY"
 
 ./utility/build.sh
-./build/TravelerWebserverExe
+./build/main
