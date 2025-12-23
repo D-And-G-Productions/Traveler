@@ -19,6 +19,9 @@ services:
       target: dev
     volumes:
       - ./traveler_web:/workspace
+      - ~/.config/nvim:/root/.config/nvim
+      - ~/.local/share/nvim:/root/.local/share/nvim
+      - ~/.local/state/nvim:/root/.
     ports:
       - "19006:19006"
     tty: true
