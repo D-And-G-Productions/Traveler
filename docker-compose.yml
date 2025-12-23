@@ -1,0 +1,26 @@
+services:
+  api:
+    build:
+      context: ./backend_api
+      target: dev
+    volumes:
+      - ./backend_api:/workspace
+      # - ${HOME}/.config/nvim:/root/.config/nvim
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    command: bash
+    ports:
+      - 18080:18080
+
+  frontend:
+    build:
+      context: ./traveler_web
+      target: dev
+    volumes:
+      - ./traveler_web:/workspace
+    ports:
+      - "19006:19006"
+    tty: true
+    command: zsh
+    stdin_open: true
