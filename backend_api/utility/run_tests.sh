@@ -8,4 +8,4 @@ cd "$PARENT_DIRECTORY"
 
 ./utility/build.sh
 cd build
-./WebserverMain
+ctest --output-on-failure

@@ -4,8 +4,8 @@ services:
       context: .
       target: dev
     volumes:
-      - .:/workspace
-      # - ${HOME}/.config/nvim:/root/.config/nvim
+      - .:/workspace:rw
+      - ${HOME}/.config/nvim:/root/.config/nvim
     working_dir: /workspace
     stdin_open: true
     tty: true
