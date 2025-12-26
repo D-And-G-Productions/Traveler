@@ -5,6 +5,7 @@
 
 #include <crow/json.h>
 #include <cstdint>
+#include <cstdio>
 #include <stdexcept>
 #include <string>
 
@@ -20,7 +21,6 @@ Journey JourneyJSON::toJourney(const crow::json::rvalue &json) {
   const Location destination = readLocation(json, "destination");
   const std::string arrivalTime = readString(json, "arrivalTime");
   const Mode mode = readMode(json);
-
   return Journey{name, source, destination, arrivalTime, mode};
 }
 
@@ -29,6 +29,7 @@ crow::json::wvalue JourneyJSON::toJson(const JourneyRecord &journeyRecord) {
   json["id"] = journeyRecord.id;
   return json;
 }
+
 crow::json::wvalue JourneyJSON::toJson(const Journey &journey) {
   crow::json::wvalue json;
   json["name"] = journey.name;
@@ -73,6 +74,7 @@ int64_t JourneyJSON::readInteger(const crow::json::rvalue &json, const std::stri
   }
   return json[field].i();
 }
+
 void JourneyJSON::requireField(const crow::json::rvalue &json, const std::string &field) {
   if (!json.has(field)) throw std::invalid_argument("Missing field: " + field);
 }

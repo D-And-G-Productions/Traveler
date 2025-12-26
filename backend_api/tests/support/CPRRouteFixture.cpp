@@ -11,7 +11,7 @@ void CPRRouteFixture::TearDown() {
   server.reset();
 }
 
-cpr::Response CPRRouteFixture::postJson(const std::string &url, const std::string &body) const {
+cpr::Response CPRRouteFixture::post(const std::string &url, const std::string &body) const {
   cpr::Url requestUrl = {url};
   cpr::Body requestBody = {body};
   cpr::Header requestHeader = {{"Content-Type", "application/json"}};
