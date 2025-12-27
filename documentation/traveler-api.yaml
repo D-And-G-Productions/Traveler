@@ -1,0 +1,221 @@
+openapi: 3.1.0
+info:
+  title: Traveler API
+  version: 0.1.0
+servers:
+  - url: https://api.example.com
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      security: []
+      responses:
+        "200": { description: OK }
+
+  /me:
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { type: object }
+        "401":
+          description: Unauthorised
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /journeys:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Journey"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JourneyRecord"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/JourneyRecord"
+
+  /journeys/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JourneyRecord"
+        "404":
+          description: "Not Found: Returned on Non-existent Journey OR lack of authentication"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    put:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JourneyUpdate"
+      responses:
+        "204":
+          description: Updated
+        "404":
+          description: Not Found - Non-existent Journey or lack of authentication
+
+    delete:
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not Found - Non-existent Journey or lack of authentication
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserProfile:
+      required:
+        - id
+        - name
+        - telephone
+      properties:
+        id:
+          type: number
+        name: string
+
+    JourneyRecord:
+      required:
+        - id
+        - active
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: integer
+        active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      allOf:
+        - $ref: "#/components/schemas/Journey"
+        - type: object
+
+    JourneyUpdate:
+      required:
+        - id
+        - active
+      properties:
+        id:
+          type: integer
+        active:
+          type: boolean
+      allOf:
+        - $ref: "#/components/schemas/Journey"
+        - type: object
+
+    Journey:
+      type: object
+      required:
+        - name,
+        - source,
+        - destination,
+        - arrival_time,
+        - mode
+      properties:
+        name:
+          type: string
+        source:
+          $ref: "#/components/schemas/Location"
+        destination:
+          $ref: "#/components/schemas/Location"
+        arrival_time:
+          type: string
+          format: date-time
+          description: RFC3339 timestamp, must include timezone offset
+        mode:
+          $ref: "#/components/schemas/JourneyMode"
+
+    Location:
+      type: object
+      required: [latitude, longitude, label]
+      properties:
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+        label:
+          type: string
+          minLength: 1
+
+    JourneyMode:
+      type: string
+      enum:
+        - walk
+        - bike
+        - drive
+        - transit
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
