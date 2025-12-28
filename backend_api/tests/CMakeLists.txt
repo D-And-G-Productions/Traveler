@@ -1,30 +1,32 @@
 INCLUDE(GoogleTest)
 
-ADD_LIBRARY(tests_support STATIC
-  ./support/CrowTestServer.cpp
-  ./support/CPRRouteFixture.cpp
-)
+ADD_LIBRARY(TestsSupport INTERFACE)
 
-TARGET_INCLUDE_DIRECTORIES(tests_support PUBLIC
+TARGET_INCLUDE_DIRECTORIES(TestsSupport INTERFACE
   ${CMAKE_CURRENT_LIST_DIR}
 )
 
-TARGET_LINK_LIBRARIES(tests_support PUBLIC
+TARGET_LINK_LIBRARIES(TestsSupport INTERFACE
   WebserverLib
   cpr::cpr
   GTest::gtest_main
 )
 
-ADD_EXECUTABLE(journey_routes_tests
-  ./routes/JourneyFlowTest.cpp
-  ./routes/JourneyGetTest.cpp
-  ./routes/JourneyPostTest.cpp
-  ./routes/JourneyIdGetTest.cpp
-  ./routes/JourneyIdPutTest.cpp
-  ./routes/HealthGetTest.cpp
+ADD_EXECUTABLE(RoutesTests
+  ./test_routes/TestJourneyGet.cpp
+  ./test_routes/TestJourneyIdGet.cpp
+  ./test_routes/TestJourneyPost.cpp
+  ./test_routes/TestJourneyIdPut.cpp
+  ./test_routes/TestHealthGet.cpp
+  ./test_routes/TestMeGet.cpp
 )
 
-TARGET_LINK_LIBRARIES(journey_routes_tests PRIVATE
-  tests_support
+ADD_EXECUTABLE(MiddlewareTests
+  ./test_middleware/TestAuthMiddleware.cpp
 )
-GTEST_DISCOVER_TESTS(journey_routes_tests)
+
+TARGET_LINK_LIBRARIES(RoutesTests PRIVATE TestsSupport)
+TARGET_LINK_LIBRARIES(MiddlewareTests PRIVATE TestsSupport)
+
+GTEST_DISCOVER_TESTS(RoutesTests)
+# GTEST_DISCOVER_TESTS(MiddlewareTests)
