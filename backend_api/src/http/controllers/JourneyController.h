@@ -23,5 +23,7 @@ private:
 
   crow::response updateJourney(const crow::request &request, const int64_t id);
 
+  crow::response deleteJourney(const int64_t id);
+
   crow::response sendJourneyRecord(JourneyRecord &journeyRecord);
 };

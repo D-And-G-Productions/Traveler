@@ -18,6 +18,8 @@ public:
 
   JourneyRecord update(JourneyRecord &updatedJourneyRecord) override;
 
+  JourneyRecord del(int64_t id) override;
+
   std::vector<JourneyRecord> list() override;
 
 private:
@@ -52,6 +54,14 @@ inline JourneyRecord MockJourneyRepository::update(JourneyRecord &updatedJourney
   }
   iterator->second = updatedJourneyRecord;
   return iterator->second;
+}
+
+inline JourneyRecord MockJourneyRepository::del(int64_t id) {
+  auto iterator = journeys.find(id);
+  if (iterator == journeys.end()) {
+    throw std::invalid_argument("Id does not exist");
+  }
+  journeys.erase(iterator);
 }
 
 inline std::vector<JourneyRecord> MockJourneyRepository::list() {

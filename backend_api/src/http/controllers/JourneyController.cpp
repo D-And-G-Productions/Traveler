@@ -27,6 +27,10 @@ void JourneyController::registerRoutes(crow::SimpleApp &app) {
   CROW_ROUTE(app, "/journey/<int>").methods(PUT)([this](const crow::request &request, long id) {
     return updateJourney(request, static_cast<int64_t>(id));
   });
+
+  CROW_ROUTE(app, "/journey/<int>").methods(crow::HTTPMethod::DELETE)([this](long id) -> crow::response {
+    return deleteJourney(static_cast<int64_t>(id));
+  });
 };
 
 crow::json::rvalue parseJSON(const crow::request &request) {
@@ -109,3 +113,12 @@ crow::response JourneyController::updateJourney(const crow::request &request, co
   }
   return crow::response(crow::NO_CONTENT);
 };
+
+crow::response JourneyController::deleteJourney(int64_t id) {
+  try {
+    repository_->del(id);
+    return crow::response(crow::NO_CONTENT);
+  } catch (const std::invalid_argument &error) {
+    return crow::response(crow::NOT_FOUND);
+  }
+}

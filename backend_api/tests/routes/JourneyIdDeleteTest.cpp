@@ -9,7 +9,7 @@
 
 class JourneyIdDeleteFixture : public CrowRouteFixture {
 public:
-  crow::response handlePutJourney(const int64_t id, const Journey &journey) {
+  crow::response handlePutJourney(const int64_t id) {
     crow::request request;
     request.method = crow::HTTPMethod::DELETE;
     request.url = "/journey/" + std::to_string(id);
@@ -22,18 +22,23 @@ public:
 
 TEST_F(JourneyIdDeleteFixture, DeletingNonExistantJourneyReturnsBadRequest) {
   const int64_t NON_EXISTENT_ID = 0;
-  const Journey journey{};
-  crow::response response = handlePutJourney(NON_EXISTENT_ID, journey);
+  crow::response response = handlePutJourney(NON_EXISTENT_ID);
   ASSERT_EQ(response.code, crow::NOT_FOUND);
 }
 
-TEST_F(JourneyIdDeleteFixture, DeletingExistingJourneyIsReflectedInDatabase) {
-  std::string ORIGINAL_NAME = "ORIGINAL";
+TEST_F(JourneyIdDeleteFixture, DeletingExistingJourney) {
   Journey journey{};
-  journey.name = ORIGINAL_NAME;
   JourneyRecord originalJourneyRecord = server->repository()->create(journey);
 
-  handlePutJourney(originalJourneyRecord.id, journey);
+  crow::response response = handlePutJourney(originalJourneyRecord.id);
+  ASSERT_EQ(response.code, crow::NO_CONTENT);
+}
+
+TEST_F(JourneyIdDeleteFixture, DeletingExistingJourneyIsReflectedInDatabase) {
+  Journey journey{};
+  JourneyRecord originalJourneyRecord = server->repository()->create(journey);
+
+  handlePutJourney(originalJourneyRecord.id);
   JourneyRecord updatedJourneyRecord = server->repository()->get(originalJourneyRecord.id);
   ASSERT_EQ(updatedJourneyRecord, NULL);
 }
