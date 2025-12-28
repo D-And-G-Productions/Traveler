@@ -1,5 +1,7 @@
 #pragma once
 
+#include "http/controllers/HealthController.hpp"
+#include "http/controllers/JourneyController.h"
 #include "repository/JourneyRepository.h"
 #include <atomic>
 #include <crow.h>
@@ -14,6 +16,8 @@ class CrowTestServer {
   std::thread server_thread_;
   std::atomic<bool> stopped_{false};
   std::shared_ptr<JourneyRepository> repository_;
+  std::shared_ptr<JourneyController> journeyController_;
+  std::shared_ptr<HealthController> healthController_;
 
 public:
   CrowTestServer(int port);

@@ -13,7 +13,7 @@ protected:
 
   void TearDown() override;
 
-  cpr::Response postJson(const std::string &url, const std::string &body) const;
+  cpr::Response post(const std::string &url, const std::string &body) const;
 
   cpr::Response get(const std::string &url) const;
 };

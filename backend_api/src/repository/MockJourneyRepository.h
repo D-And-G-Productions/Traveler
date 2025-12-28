@@ -3,17 +3,20 @@
 #include "domain/Journey.h"
 #include <atomic>
 #include <cstdint>
+#include <iostream>
 #include <mutex>
+#include <ostream>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 class MockJourneyRepository final : public JourneyRepository {
 public:
-  JourneyRecord create(Journey journey) override;
+  JourneyRecord create(Journey &journey) override;
 
   JourneyRecord get(int64_t id) override;
 
-  JourneyRecord update(JourneyRecord journeyRecord) override;
+  JourneyRecord update(JourneyRecord &updatedJourneyRecord) override;
 
   std::vector<JourneyRecord> list() override;
 
@@ -25,11 +28,11 @@ private:
   std::atomic<int64_t> index{0};
 };
 
-inline JourneyRecord MockJourneyRepository::create(Journey journey) {
+inline JourneyRecord MockJourneyRepository::create(Journey &journey) {
   int64_t id = index.fetch_add(1, std::memory_order_relaxed);
-  JourneyRecord journeyRecord{id, std::move(journey)};
+  JourneyRecord journeyRecord{id, journey};
   std::lock_guard<std::mutex> lock(journeysMutex);
-  auto [it, ok] = journeys.emplace(id, std::move(journeyRecord));
+  auto [it, ok] = journeys.insert(std::make_pair(id, journeyRecord));
   return it->second;
 }
 
@@ -42,7 +45,7 @@ inline JourneyRecord MockJourneyRepository::get(int64_t id) {
   return iterator->second;
 }
 
-inline JourneyRecord MockJourneyRepository::update(JourneyRecord updatedJourneyRecord) {
+inline JourneyRecord MockJourneyRepository::update(JourneyRecord &updatedJourneyRecord) {
   auto iterator = journeys.find(updatedJourneyRecord.id);
   if (iterator == journeys.end()) {
     throw std::invalid_argument("Id does not exist");

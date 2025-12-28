@@ -7,10 +7,8 @@
 #include <crow/json.h>
 #include <gtest/gtest.h>
 
-class JourneyIdGetFixture : public CrowRouteFixture {
+class JourneyGetFixture : public CrowRouteFixture {
 public:
-  std::string journeyUrl() { return server->baseUrl() + "/journey"; }
-
   crow::response handleGetJourney() {
     crow::request request;
     request.method = crow::HTTPMethod::Get;
@@ -20,19 +18,9 @@ public:
     server->app().handle_full(request, response);
     return response;
   }
-
-  crow::response handlePutJourney(const int64_t id) {
-    crow::request request;
-    request.method = crow::HTTPMethod::Get;
-    request.url = "/journey/" + std::to_string(id);
-
-    crow::response response;
-    server->app().handle_full(request, response);
-    return response;
-  }
 };
 
-TEST_F(JourneyIdGetFixture, GetEmptyReturnsJsonArray) {
+TEST_F(JourneyGetFixture, GetEmptyReturnsJsonArray) {
   crow::response response = handleGetJourney();
   EXPECT_EQ(response.code, crow::OK);
 
@@ -42,9 +30,9 @@ TEST_F(JourneyIdGetFixture, GetEmptyReturnsJsonArray) {
   EXPECT_EQ(parsed.size(), 0);
 }
 
-TEST_F(JourneyIdGetFixture, GetNonEmptyReturnsJsonArray) {
+TEST_F(JourneyGetFixture, GetNonEmptyReturnsJsonArray) {
   Journey journey{};
-  server->repository()->create(std::move(journey));
+  server->repository()->create(journey);
 
   crow::response response = handleGetJourney();
   EXPECT_EQ(response.code, crow::OK);
@@ -55,7 +43,7 @@ TEST_F(JourneyIdGetFixture, GetNonEmptyReturnsJsonArray) {
   EXPECT_EQ(parsed.size(), 1);
 }
 
-TEST_F(JourneyIdGetFixture, GetReturnsJourneyWithId) {
+TEST_F(JourneyGetFixture, GetReturnsJourneyWithId) {
   Journey journey{};
   JourneyRecord expectedJourneyRecord = server->repository()->create(journey);
 

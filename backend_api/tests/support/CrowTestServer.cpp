@@ -1,15 +1,18 @@
 #include "CrowTestServer.h"
-#include "http/JourneyRoutes.h"
 #include "repository/JourneyRepository.h"
 #include "repository/MockJourneyRepository.h"
 #include <memory>
 
-CrowTestServer::CrowTestServer(int port) : port_(port), repository_(std::make_shared<MockJourneyRepository>()) {
+CrowTestServer::CrowTestServer(int port)
+    : port_(port), repository_(std::make_shared<MockJourneyRepository>()),
+      journeyController_(std::make_shared<JourneyController>(repository_)),
+      healthController_(std::make_shared<HealthController>()) {
   registerRoutes();
 }
 
 void CrowTestServer::registerRoutes() {
-  registerJourneyRoutes(app_, repository_);
+  journeyController_->registerRoutes(app_);
+  healthController_->registerRoutes(app_);
   app_.validate();
 }
 

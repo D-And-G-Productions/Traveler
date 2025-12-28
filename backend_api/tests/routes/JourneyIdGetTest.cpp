@@ -10,8 +10,6 @@
 
 class JourneyIdGetFixture : public CrowRouteFixture {
 public:
-  std::string journeyUrl() { return server->baseUrl() + "/journey"; }
-
   crow::response handlePutJourney(const int64_t id) {
     crow::request request;
     request.method = crow::HTTPMethod::Get;
