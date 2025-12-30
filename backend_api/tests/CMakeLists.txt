@@ -22,6 +22,7 @@ ADD_EXECUTABLE(journey_routes_tests
   ./routes/JourneyIdGetTest.cpp
   ./routes/JourneyIdPutTest.cpp
   ./routes/HealthGetTest.cpp
+  ./routes/JourneyIdDeleteTest.cpp
 )
 
 TARGET_LINK_LIBRARIES(journey_routes_tests PRIVATE

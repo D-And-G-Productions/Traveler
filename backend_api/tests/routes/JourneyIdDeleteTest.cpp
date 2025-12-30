@@ -39,6 +39,6 @@ TEST_F(JourneyIdDeleteFixture, DeletingExistingJourneyIsReflectedInDatabase) {
   JourneyRecord originalJourneyRecord = server->repository()->create(journey);
 
   handlePutJourney(originalJourneyRecord.id);
-  JourneyRecord updatedJourneyRecord = server->repository()->get(originalJourneyRecord.id);
-  ASSERT_EQ(updatedJourneyRecord, NULL);
+  crow::response response = handlePutJourney(originalJourneyRecord.id);
+  ASSERT_EQ(response.code, crow::NOT_FOUND);
 }
