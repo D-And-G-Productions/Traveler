@@ -7,13 +7,16 @@
 #include "domain/JourneyCreate.hpp"
 #include "http/middleware/AuthMiddleware.hpp"
 #include "repository/JourneyRepository.hpp"
+#include "repository/UserRepository.hpp"
 #include <crow/app.h>
 #include <crow/common.h>
 #include <crow/http_request.h>
 #include <crow/http_response.h>
+#include <crow/json.h>
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
+#include <vector>
 
 using context = AuthMiddleware::context;
 using crow::request;
@@ -21,10 +24,18 @@ using crow::response;
 using crow::HTTPMethod::GET;
 using crow::HTTPMethod::POST;
 using crow::HTTPMethod::PUT;
+using std::shared_ptr;
 
 class JourneyController {
+private:
+  shared_ptr<JourneyRepository> journeyRepo;
+  shared_ptr<UserRepository> userRepo;
+
 public:
-  JourneyController(std::shared_ptr<JourneyRepository> repository) : repository_(repository) {}
+  JourneyController(
+      shared_ptr<JourneyRepository> journeyRepo_, shared_ptr<UserRepository> userRepo_
+  )
+      : journeyRepo(journeyRepo_), userRepo(userRepo_) {}
 
   void registerRoutes(crow::App<AuthMiddleware> &app) {
     CROW_ROUTE(app, "/journey").methods(POST)([this, &app](const crow::request &request) {
@@ -51,8 +62,6 @@ public:
   }
 
 private:
-  std::shared_ptr<JourneyRepository> repository_;
-
   response createJourney(const context &context, const request &request) {
     crow::json::rvalue body = crow::json::load(request.body);
     if (!body) {
@@ -70,7 +79,7 @@ private:
     JourneyCreate journeyCreate = toJourneyCreate(0, journeyCreateRequest);
     Journey journey;
     try {
-      journey = this->repository_->create(journeyCreate);
+      journey = this->journeyRepo->create(journeyCreate);
     } catch (std::exception &error) {
       return crow::response(500);
     }
@@ -85,29 +94,29 @@ private:
     return body;
   }
 
-  response listJourneys(const context &context, const request &request) {
-    std::vector<Journey> journeys = repository_->list();
+  crow::json::wvalue toJsonArray(const std::vector<Journey> &journeys) {
+    crow::json::wvalue::list journeysJson;
+    journeysJson.resize(journeys.size());
 
-    crow::json::wvalue::list jsonArray;
-    jsonArray.reserve(journeys.size());
-    for (const Journey &journey : journeys) {
-      JourneyResponse journeyResponse = toJourneyResponse(journey);
-      std::string journeyJson = api::json::toJson(journeyResponse).dump();
-      jsonArray.push_back(journeyJson);
+    for (size_t i{0}; i < journeys.size(); i++) {
+      JourneyResponse journeyResponse = toJourneyResponse(journeys[i]);
+      journeysJson[i] = api::json::toJson(journeyResponse);
     }
 
-    crow::json::wvalue outputJSON(jsonArray);
-    crow::response response{outputJSON};
-    response.code = crow::OK;
-    response.set_header("Content-Type", "application/json");
-    return response;
+    return journeysJson;
+  }
+
+  response listJourneys(const context &context, const request &request) {
+    std::vector<Journey> journeys = journeyRepo->getByUserId(context.userId);
+    crow::json::wvalue json = toJsonArray(journeys);
+    return crow::response{crow::OK, "application/json", json.dump()};
   }
 
   response getJourney(const context &context, const request &request, const int64_t id) {
     Journey journey;
 
     try {
-      journey = repository_->get(id);
+      journey = journeyRepo->getById(id);
     } catch (std::invalid_argument &error) {
       return crow::response{crow::NOT_FOUND, "Not Found"};
     }
@@ -136,7 +145,7 @@ private:
 
     Journey updatedJourney;
     try {
-      updatedJourney = repository_->update(id, journeyCreate);
+      updatedJourney = journeyRepo->update(id, journeyCreate);
     } catch (std::invalid_argument &error) {
       return crow::response(crow::NOT_FOUND);
     }

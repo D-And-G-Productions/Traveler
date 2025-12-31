@@ -7,6 +7,6 @@
 #include <gtest/gtest.h>
 
 TEST_F(HealthGet, HealthReturnsOK) {
-  cpr::Response response = healthGet();
+  cpr::Response response = healthGet("TOKEN");
   EXPECT_EQ(response.status_code, cpr::status::HTTP_OK);
 }

@@ -10,16 +10,16 @@
 
 TEST_F(JourneyPost, PostReturnsOk) {
   JourneyCreateRequest journeyCreate{};
-  cpr::Response response = journeyPost(journeyCreate);
+  cpr::Response response = journeyPost("TOKEN", journeyCreate);
   EXPECT_EQ(response.status_code, cpr::status::HTTP_CREATED) << response.text << "\n";
 }
 
 TEST_F(JourneyPost, PostReturnsJourneyWithId) {
   JourneyCreateRequest journeyCreate{.name = "TEST_NAME"};
-  cpr::Response response = journeyPost(journeyCreate);
+  cpr::Response response = journeyPost("TOKEN", journeyCreate);
   crow::json::rvalue parsed = crow::json::load(response.text);
 
   ASSERT_TRUE(parsed);
-  JourneyResponse jResponse = api::json::fromJson<JourneyResponse>(parsed);
-  EXPECT_EQ(jResponse.name, journeyCreate.name);
+  JourneyResponse journeyResponse = api::json::fromJson<JourneyResponse>(parsed);
+  EXPECT_EQ(journeyResponse.name, journeyCreate.name);
 }

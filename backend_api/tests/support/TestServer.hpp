@@ -23,10 +23,11 @@ using std::shared_ptr;
 class TestServer : public Server<AuthMiddleware> {
 public:
   shared_ptr<JourneyController> journeyController;
-  shared_ptr<JourneyRepository> journeyRepository;
-  shared_ptr<UserRepository> userRepository;
+  shared_ptr<JourneyRepository> journeyRepo;
+  shared_ptr<UserRepository> userRepo;
   shared_ptr<MeController> meController;
   shared_ptr<HealthController> healthController;
+  shared_ptr<MockTokenVerifier> mockTokenVerifier;
 
 private:
   std::thread serverThread;
@@ -65,21 +66,22 @@ protected:
     }
   }
 
-  void setupMiddleware() override {
-    shared_ptr<TokenVerifier> tv = make_shared<MockTokenVerifier>();
-    AuthMiddleware &am = application.get_middleware<AuthMiddleware>();
-    am.setVerifier(tv);
+  void setupRepositories() override {
+    journeyRepo = make_shared<MockJourneyRepository>();
+    userRepo = make_shared<MockUserRepository>();
   }
 
-  void setupRepositories() override {
-    journeyRepository = make_shared<MockJourneyRepository>();
-    userRepository = make_shared<MockUserRepository>();
+  void setupMiddleware() override {
+    AuthMiddleware &authMiddleware = application.get_middleware<AuthMiddleware>();
+    shared_ptr<MockTokenVerifier> mockVerifier = make_shared<MockTokenVerifier>();
+    authMiddleware.setVerifier(mockVerifier);
+    authMiddleware.setUserRepository(userRepo);
   }
 
   void setupControllers() override {
-    journeyController = make_shared<JourneyController>(journeyRepository);
+    journeyController = make_shared<JourneyController>(journeyRepo, userRepo);
     healthController = make_shared<HealthController>();
-    meController = make_shared<MeController>(userRepository);
+    meController = make_shared<MeController>(userRepo);
   }
 
   void registerRoutes() override {
@@ -87,4 +89,8 @@ protected:
     healthController->registerRoutes(application);
     meController->registerRoutes(application);
   }
+
+  void acceptAllTokens() { mockTokenVerifier->acceptAll(); }
+
+  void rejectAllTokens() { mockTokenVerifier->rejectAll(); }
 };

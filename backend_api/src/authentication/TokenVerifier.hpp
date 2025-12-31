@@ -2,7 +2,6 @@
 
 #include "VerifiedToken.hpp"
 #include <stdexcept>
-#include <string_view>
 
 class TokenVerificationError : public std::runtime_error {
 public:
@@ -12,5 +11,5 @@ public:
 struct TokenVerifier {
   virtual ~TokenVerifier() = default;
 
-  virtual VerifiedToken verifyAccessToken(const std::string_view javaScriptWebToken) const = 0;
+  virtual VerifiedToken verifyAccessToken(const std::string &javaScriptWebToken) const = 0;
 };

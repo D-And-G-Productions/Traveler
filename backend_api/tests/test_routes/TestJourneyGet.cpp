@@ -11,12 +11,12 @@
 using std::string;
 
 TEST_F(JourneyGet, ReturnsOK) {
-  cpr::Response response = journeyGet();
+  cpr::Response response = journeyGet("TOKEN");
   EXPECT_EQ(response.status_code, cpr::status::HTTP_OK);
 }
 
 TEST_F(JourneyGet, ReceiveEmptyJourneys) {
-  cpr::Response response = journeyGet();
+  cpr::Response response = journeyGet("TOKEN");
 
   crow::json::rvalue parsed = crow::json::load(response.text);
   ASSERT_TRUE(parsed);
@@ -26,9 +26,9 @@ TEST_F(JourneyGet, ReceiveEmptyJourneys) {
 
 TEST_F(JourneyGet, ReceiveOneJourney) {
   JourneyCreate journeyCreate{};
-  server->journeyRepository->create(journeyCreate);
+  server->journeyRepo->create(journeyCreate);
 
-  cpr::Response response = journeyGet();
+  cpr::Response response = journeyGet("TOKEN");
 
   crow::json::rvalue parsed = crow::json::load(response.text);
   ASSERT_TRUE(parsed);
@@ -38,10 +38,12 @@ TEST_F(JourneyGet, ReceiveOneJourney) {
 
 TEST_F(JourneyGet, ReceiveTwoJourneys) {
   JourneyCreate journeyCreate{};
-  server->journeyRepository->create(journeyCreate);
-  server->journeyRepository->create(journeyCreate);
+  journeyCreate.name = "ONE";
+  server->journeyRepo->create(journeyCreate);
+  journeyCreate.name = "TWO";
+  server->journeyRepo->create(journeyCreate);
 
-  cpr::Response response = journeyGet();
+  cpr::Response response = journeyGet("TOKEN");
 
   crow::json::rvalue parsed = crow::json::load(response.text);
   ASSERT_TRUE(parsed);

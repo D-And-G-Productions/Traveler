@@ -8,26 +8,31 @@
 #include <gtest/gtest.h>
 #include <string>
 
-void addUserWithName(std::unique_ptr<TestServer> &server, const std::string name) {
-  const User user = server->userRepository->insert(MockTokenVerifier::TESTING_SUBJECT);
-  const UserUpdate userUpdate{.name = name};
-  server->userRepository->update(user.id, userUpdate);
+using crow::json::rvalue;
+using std::string;
+
+void addUserWithName(
+    std::unique_ptr<TestServer> &server, const std::string name, const std::string subject
+) {
+  const User user = server->userRepo->insert(subject);
+  server->userRepo->update(user.id, {.name = name});
 }
 
 TEST_F(MeGet, ReturnsUserData) {
-  const std::string TEST_NAME = "TEST_NAME";
-  addUserWithName(server, TEST_NAME);
+  const string TEST_NAME = "FOO";
+  const string TOKEN_AND_SUB = "BAR";
+  addUserWithName(server, TEST_NAME, TOKEN_AND_SUB);
+  const cpr::Response response = meGet(TOKEN_AND_SUB);
+  const rvalue parsed = crow::json::load(response.text);
 
-  const cpr::Response response = meGet();
-  const crow::json::rvalue parsed = crow::json::load(response.text);
   ASSERT_TRUE(parsed);
-
   const UserResponse userResponse = api::json::fromJson(parsed);
   EXPECT_EQ(userResponse.name, TEST_NAME) << response.text << "\n";
 }
 
 TEST_F(MeGet, ReturnsOk) {
-  server->userRepository->insert(MockTokenVerifier::TESTING_SUBJECT);
-  cpr::Response response = meGet();
+  const string TOKEN_AND_SUB = "BAR";
+  server->userRepo->insert(TOKEN_AND_SUB);
+  cpr::Response response = meGet(TOKEN_AND_SUB);
   ASSERT_EQ(response.status_code, cpr::status::HTTP_OK) << response.text << "\n";
 }
