@@ -1,20 +1,6 @@
 ADD_LIBRARY(WebserverLib
-  ./app/App.h
-  ./app/App.cpp
-  ./domain/Journey.h
-  ./domain/Journey.h
-  ./domain/JourneyRecord.h
-  ./domain/Location.h
-  ./domain/Mode.h
-  ./domain/WithId.h
-  ./http/controllers/JourneyController.h
-  ./http/controllers/JourneyController.cpp
   ./http/controllers/HealthController.hpp
-  ./http/controllers/HealthController.cpp
-  ./json/JourneyJson.h
-  ./json/JourneyJson.cpp
-  ./repository/JourneyRepository.h
-  ./repository/MockJourneyRepository.h
+  ./http/middleware/AuthMiddleware.cpp
 )
 
 # Make includes clean from other targets (tests, main)
