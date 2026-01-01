@@ -11,7 +11,7 @@
 
 TEST_F(JourneyIdGet, ExistingIdReturnsOk) {
   JourneyCreate journeyCreate{};
-  Journey expectedRecord = server->journeyRepo->create(journeyCreate);
+  Journey expectedRecord = server->journeyRepo->insert(journeyCreate);
 
   cpr::Response response = journeyGetId(expectedRecord.id, "TOKEN");
   EXPECT_EQ(response.status_code, cpr::status::HTTP_OK) << response.text << "\n";
@@ -25,7 +25,7 @@ TEST_F(JourneyIdGet, NonExistentIdReturnsNotFound) {
 
 TEST_F(JourneyIdGet, ReturnJourneyWithMatchingId) {
   JourneyCreate journeyCreate{.name = "TEST_NAME"};
-  Journey created = server->journeyRepo->create(journeyCreate);
+  Journey created = server->journeyRepo->insert(journeyCreate);
   cpr::Response response = journeyGetId(created.id, "TOKEN");
   crow::json::rvalue parsed = crow::json::load(response.text);
 

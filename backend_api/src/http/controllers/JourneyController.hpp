@@ -79,7 +79,7 @@ private:
     JourneyCreate journeyCreate = toJourneyCreate(0, journeyCreateRequest);
     Journey journey;
     try {
-      journey = this->journeyRepo->create(journeyCreate);
+      journey = this->journeyRepo->insert(journeyCreate);
     } catch (std::exception &error) {
       return crow::response(500);
     }
@@ -107,7 +107,7 @@ private:
   }
 
   response listJourneys(const context &context, const request &request) {
-    std::vector<Journey> journeys = journeyRepo->getByUserId(context.userId);
+    std::vector<Journey> journeys = journeyRepo->selectByUserId(context.userId);
     crow::json::wvalue json = toJsonArray(journeys);
     return crow::response{crow::OK, "application/json", json.dump()};
   }
@@ -116,7 +116,7 @@ private:
     Journey journey;
 
     try {
-      journey = journeyRepo->getById(id);
+      journey = journeyRepo->selectById(id);
     } catch (std::invalid_argument &error) {
       return crow::response{crow::NOT_FOUND, "Not Found"};
     }

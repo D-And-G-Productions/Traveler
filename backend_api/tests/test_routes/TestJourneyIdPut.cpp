@@ -14,7 +14,7 @@ using std::string;
 TEST_F(JourneyIdPut, UpdateExistingRecordReturnsNoContent) {
   const int64_t NON_EXISTENT_ID = 0;
   const JourneyCreate journeyCreate{};
-  const Journey existingJourney = server->journeyRepo->create(journeyCreate);
+  const Journey existingJourney = server->journeyRepo->insert(journeyCreate);
   const JourneyCreateRequest jcRequest{};
   const cpr::Response response = journeyIdPut("TOKEN", NON_EXISTENT_ID, jcRequest);
   ASSERT_EQ(response.status_code, cpr::status::HTTP_NO_CONTENT);
@@ -32,11 +32,11 @@ TEST_F(JourneyIdPut, UpdateIsReflectedInDatabase) {
   const string UPDATED_NAME = "UPDATED";
 
   const JourneyCreate journeyCreate{.name = ORIGINAL_NAME};
-  const Journey originalJourney = server->journeyRepo->create(journeyCreate);
+  const Journey originalJourney = server->journeyRepo->insert(journeyCreate);
 
   const JourneyCreateRequest jcRequest{.name = UPDATED_NAME};
   journeyIdPut("TOKEN", originalJourney.id, jcRequest);
 
-  const Journey updatedJourney = server->journeyRepo->getById(originalJourney.id);
+  const Journey updatedJourney = server->journeyRepo->selectById(originalJourney.id);
   ASSERT_EQ(updatedJourney.name, UPDATED_NAME);
 }

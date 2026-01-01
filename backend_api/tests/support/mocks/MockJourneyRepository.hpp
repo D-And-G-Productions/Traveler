@@ -23,7 +23,7 @@ private:
   }
 
 public:
-  Journey create(const JourneyCreate &journeyCreate) override {
+  Journey insert(const JourneyCreate &journeyCreate) override {
     int64_t id = index.fetch_add(1, std::memory_order_relaxed);
     Journey journey = toJourney(id, journeyCreate);
 
@@ -32,7 +32,7 @@ public:
     return journeys.back(); // copy
   }
 
-  Journey getById(int64_t id) override {
+  Journey selectById(int64_t id) override {
     std::lock_guard<std::mutex> lock(journeysMutex);
     auto it = findByIdLocked(id);
     if (it == journeys.end()) {
@@ -41,13 +41,15 @@ public:
     return *it; // copy
   }
 
-  std::vector<Journey> getByUserId(int64_t userId) override {
-    std::vector<Journey> result;
+  std::vector<Journey> selectByUserId(int64_t userId) override {
+    std::vector<Journey> result{};
+    std::cout << "Select By User Id 1" << std::endl;
     std::lock_guard<std::mutex> lock(journeysMutex);
     for (const auto &j : journeys) {
       if (j.userId == userId)
         result.push_back(j);
     }
+    std::cout << "Select By User Id 2" << std::endl;
     return result;
   }
 

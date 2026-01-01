@@ -4,6 +4,10 @@
 #include "cpr/response.h"
 #include "cpr/timeout.h"
 #include "support/fixtures/RouteFixture.hpp"
+#include <crow/common.h>
+#include <crow/http_request.h>
+#include <crow/http_response.h>
+#include <iostream>
 
 class JourneyGet : public RouteFixture {
 public:

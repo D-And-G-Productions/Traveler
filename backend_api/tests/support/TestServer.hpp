@@ -53,12 +53,6 @@ public:
     application.wait_for_server_start();
   }
 
-  crow::response handleRequest(crow::request &request) {
-    crow::response response;
-    application.handle_full(request, response);
-    return response;
-  }
-
 protected:
   void stopServerThread() {
     if (serverThread.joinable()) {
@@ -73,8 +67,8 @@ protected:
 
   void setupMiddleware() override {
     AuthMiddleware &authMiddleware = application.get_middleware<AuthMiddleware>();
-    shared_ptr<MockTokenVerifier> mockVerifier = make_shared<MockTokenVerifier>();
-    authMiddleware.setVerifier(mockVerifier);
+    mockTokenVerifier = make_shared<MockTokenVerifier>();
+    authMiddleware.setVerifier(mockTokenVerifier);
     authMiddleware.setUserRepository(userRepo);
   }
 
