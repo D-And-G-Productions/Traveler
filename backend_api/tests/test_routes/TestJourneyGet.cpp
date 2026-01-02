@@ -1,7 +1,9 @@
 #include "cpr/response.h"
 #include "cpr/status_codes.h"
 #include "domain/JourneyCreate.hpp"
+#include "domain/User.hpp"
 #include "support/fixtures/JourneyGet.hpp"
+#include "support/fixtures/RouteFixture.hpp"
 #include <crow/common.h>
 #include <crow/http_response.h>
 #include <crow/json.h>
@@ -11,40 +13,56 @@
 using std::string;
 
 TEST_F(JourneyGet, ReturnsOK) {
-  cpr::Response response = journeyGet();
+  cpr::Response response = journeyGet(testUser.token);
   EXPECT_EQ(response.status_code, cpr::status::HTTP_OK);
 }
 
-TEST_F(JourneyGet, ReceiveEmptyJourneys) {
-  cpr::Response response = journeyGet();
+TEST_F(JourneyGet, EmptyResponseBodyIsParsed) {
+  cpr::Response response = journeyGet(testUser.token);
+  crow::json::rvalue json = crow::json::load(response.text);
+  EXPECT_TRUE(json);
+}
 
-  crow::json::rvalue parsed = crow::json::load(response.text);
-  ASSERT_TRUE(parsed);
-  EXPECT_EQ(parsed.t(), crow::json::type::List);
-  EXPECT_EQ(parsed.size(), 0);
+TEST_F(JourneyGet, NonEmptyResponseBodyIsParsed) {
+  JourneyCreate journeyCreate{.userId = testUser.user.id};
+  createJourney(journeyCreate);
+  cpr::Response response = journeyGet(testUser.token);
+  crow::json::rvalue json = crow::json::load(response.text);
+  EXPECT_TRUE(json);
+}
+
+TEST_F(JourneyGet, ReceiveZeroJourneys) {
+  cpr::Response response = journeyGet(testUser.token);
+  crow::json::rvalue journeysJson = crow::json::load(response.text);
+  EXPECT_EQ(journeysJson.size(), 0);
 }
 
 TEST_F(JourneyGet, ReceiveOneJourney) {
-  JourneyCreate journeyCreate{};
-  server->journeyRepository->create(journeyCreate);
-
-  cpr::Response response = journeyGet();
-
-  crow::json::rvalue parsed = crow::json::load(response.text);
-  ASSERT_TRUE(parsed);
-  EXPECT_EQ(parsed.t(), crow::json::type::List);
-  EXPECT_EQ(parsed.size(), 1);
+  JourneyCreate journeyCreate{.userId = testUser.user.id};
+  createJourney(journeyCreate);
+  cpr::Response response = journeyGet(testUser.token);
+  crow::json::rvalue journeysJson = crow::json::load(response.text);
+  EXPECT_EQ(journeysJson.size(), 1);
 }
 
 TEST_F(JourneyGet, ReceiveTwoJourneys) {
   JourneyCreate journeyCreate{};
-  server->journeyRepository->create(journeyCreate);
-  server->journeyRepository->create(journeyCreate);
+  createJourney(journeyCreate);
+  createJourney(journeyCreate);
+  cpr::Response response = journeyGet(testUser.token);
+  crow::json::rvalue journeysJson = crow::json::load(response.text);
+  EXPECT_EQ(journeysJson.size(), 2);
+}
 
-  cpr::Response response = journeyGet();
+TEST_F(JourneyGet, UserReceivesOnlyTheirJourneys) {
+  TestUser differentUser = createTestUser("DIFFERENT USER");
+  JourneyCreate journeyCreate{.userId = testUser.user.id};
+  createJourney(journeyCreate);
 
-  crow::json::rvalue parsed = crow::json::load(response.text);
-  ASSERT_TRUE(parsed);
-  EXPECT_EQ(parsed.t(), crow::json::type::List);
-  EXPECT_EQ(parsed.size(), 2);
+  cpr::Response testUserResponse = journeyGet(testUser.token);
+  cpr::Response differentUserResponse = journeyGet(differentUser.token);
+  crow::json::rvalue testUserJourneysJson = crow::json::load(testUserResponse.text);
+  crow::json::rvalue differentUserJourneysJson = crow::json::load(differentUserResponse.text);
+  EXPECT_EQ(testUserJourneysJson.size(), 1);
+  EXPECT_EQ(differentUserJourneysJson.size(), 0);
 }

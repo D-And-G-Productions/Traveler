@@ -8,12 +8,8 @@
 
 class JourneyIdGet : public RouteFixture {
 public:
-  cpr::Response journeyGetId(int64_t id) {
-    string validBearer = std::format("Bearer {}", TestConstants::TEST_TOKEN);
-    return journeyGetId(validBearer, id);
-  }
-
-  cpr::Response journeyGetId(string &bearer, int64_t id) {
+  cpr::Response journeyGetId(int64_t id, const std::string &token) {
+    string bearer = std::format("Bearer {}", TestConstants::TEST_TOKEN);
     cpr::Header authHeader = {{"Authorization", bearer}};
     cpr::Timeout timeout = {TestConstants::TIMEOUT_MS};
     cpr::Url journeyUrl = {std::format("{}/{}/{}", url, "journey", id)};

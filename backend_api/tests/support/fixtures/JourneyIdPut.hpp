@@ -10,13 +10,9 @@
 
 class JourneyIdPut : public RouteFixture {
 public:
-  cpr::Response journeyIdPut(const int64_t id, const JourneyCreateRequest &jcRequest) {
-    string validBearer = std::format("Bearer {}", TestConstants::TEST_TOKEN);
-    return journeyIdPut(validBearer, id, jcRequest);
-  }
-
   cpr::Response
-  journeyIdPut(const string &bearer, const int64_t id, const JourneyCreateRequest &jcRequest) {
+  journeyIdPut(const string &token, const int64_t id, const JourneyCreateRequest &jcRequest) {
+    string bearer = std::format("Bearer {}", TestConstants::TEST_TOKEN);
     cpr::Header authHeader = {{"Authorization", bearer}};
     cpr::Timeout timeout = {TestConstants::TIMEOUT_MS};
     cpr::Url journeyUrl = {std::format("{}/{}/{}", url, "journey", id)};

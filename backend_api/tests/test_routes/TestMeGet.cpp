@@ -1,6 +1,6 @@
 #include "api/dto/UserReponse.hpp"
 #include "support/fixtures/MeGet.hpp"
-#include "support/mocks/MockTokenVerifier.hpp"
+#include "support/fixtures/RouteFixture.hpp"
 #include <cpr/response.h>
 #include <cpr/status_codes.h>
 #include <crow/common.h>
@@ -8,26 +8,34 @@
 #include <gtest/gtest.h>
 #include <string>
 
-void addUserWithName(std::unique_ptr<TestServer> &server, const std::string name) {
-  const User user = server->userRepository->insert(MockTokenVerifier::TESTING_SUBJECT);
-  const UserUpdate userUpdate{.name = name};
-  server->userRepository->update(user.id, userUpdate);
+using crow::json::rvalue;
+using std::string;
+
+TEST_F(MeGet, ReturnsOk) {
+  cpr::Response response = meGet(testUser.token);
+  ASSERT_EQ(response.status_code, cpr::status::HTTP_OK) << response.text << "\n";
 }
 
 TEST_F(MeGet, ReturnsUserData) {
-  const std::string TEST_NAME = "TEST_NAME";
-  addUserWithName(server, TEST_NAME);
+  const cpr::Response response = meGet(testUser.token);
+  const rvalue userJson = crow::json::load(response.text);
 
-  const cpr::Response response = meGet();
-  const crow::json::rvalue parsed = crow::json::load(response.text);
-  ASSERT_TRUE(parsed);
-
-  const UserResponse userResponse = api::json::fromJson(parsed);
-  EXPECT_EQ(userResponse.name, TEST_NAME) << response.text << "\n";
+  ASSERT_TRUE(userJson);
+  EXPECT_NO_THROW(const UserResponse userResponse = api::json::fromJson(userJson));
 }
 
-TEST_F(MeGet, ReturnsOk) {
-  server->userRepository->insert(MockTokenVerifier::TESTING_SUBJECT);
-  cpr::Response response = meGet();
-  ASSERT_EQ(response.status_code, cpr::status::HTTP_OK) << response.text << "\n";
+TEST_F(MeGet, UserDataMatches) {
+  const cpr::Response response = meGet(testUser.token);
+  const UserResponse userResponse = parseToUserResponse(response.text);
+  expectMatchingUserData(testUser.user, userResponse);
+}
+
+TEST_F(MeGet, UsersGetTheirOwnData) {
+  TestUser differentTestUser = createTestUser("different USER NAME");
+  const cpr::Response testUserHttpResponse = meGet(testUser.token);
+  const cpr::Response differentUserHttpResponse = meGet(differentTestUser.token);
+  UserResponse testUserResponse = parseToUserResponse(testUserHttpResponse.text);
+  UserResponse differentUserResponse = parseToUserResponse(differentUserHttpResponse.text);
+  expectMatchingUserData(testUser.user, testUserResponse);
+  expectMatchingUserData(differentTestUser.user, differentUserResponse);
 }

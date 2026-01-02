@@ -95,7 +95,7 @@ inline crow::json::wvalue toJson(const JourneyResponse &journeyResponse) {
 }
 
 template <>
-inline JourneyResponse fromJson<JourneyResponse>(const crow::json::rvalue &json) {
+inline JourneyResponse fromJson(const crow::json::rvalue &json) {
   JsonParsing::requireField(json, "source");
   crow::json::rvalue sourceJson = json["source"];
   LocationResponse source = fromJson<LocationResponse>(sourceJson);

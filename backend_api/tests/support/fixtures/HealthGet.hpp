@@ -7,9 +7,9 @@
 
 class HealthGet : public RouteFixture {
 public:
-  cpr::Response healthGet() {
-    string validBearer = std::format("Bearer {}", TestConstants::TEST_TOKEN);
-    cpr::Header authHeader = {{"Authorization", validBearer}};
+  cpr::Response healthGet(const std::string &token) {
+    string bearer = std::format("Bearer {}", token);
+    cpr::Header authHeader = {{"Authorization", bearer}};
     cpr::Timeout timeout = {TestConstants::TIMEOUT_MS};
     cpr::Url journeyUrl = {std::format("{}/{}", url, "journey")};
     return cpr::Get(authHeader, journeyUrl, timeout);

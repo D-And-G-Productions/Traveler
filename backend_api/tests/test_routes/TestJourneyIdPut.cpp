@@ -14,16 +14,16 @@ using std::string;
 TEST_F(JourneyIdPut, UpdateExistingRecordReturnsNoContent) {
   const int64_t NON_EXISTENT_ID = 0;
   const JourneyCreate journeyCreate{};
-  const Journey existingJourney = server->journeyRepository->create(journeyCreate);
+  const Journey existingJourney = testServer->journeyRepo->insert(journeyCreate);
   const JourneyCreateRequest jcRequest{};
-  const cpr::Response response = journeyIdPut(NON_EXISTENT_ID, jcRequest);
+  const cpr::Response response = journeyIdPut("TOKEN", NON_EXISTENT_ID, jcRequest);
   ASSERT_EQ(response.status_code, cpr::status::HTTP_NO_CONTENT);
 }
 
 TEST_F(JourneyIdPut, NonExistantIdReturnsNotFound) {
   const int64_t NON_EXISTENT_ID = 0;
   const JourneyCreateRequest jcRequest{};
-  const cpr::Response response = journeyIdPut(NON_EXISTENT_ID, jcRequest);
+  const cpr::Response response = journeyIdPut("TOKEN", NON_EXISTENT_ID, jcRequest);
   ASSERT_EQ(response.status_code, cpr::status::HTTP_NOT_FOUND);
 }
 
@@ -32,11 +32,11 @@ TEST_F(JourneyIdPut, UpdateIsReflectedInDatabase) {
   const string UPDATED_NAME = "UPDATED";
 
   const JourneyCreate journeyCreate{.name = ORIGINAL_NAME};
-  const Journey originalJourney = server->journeyRepository->create(journeyCreate);
+  const Journey originalJourney = testServer->journeyRepo->insert(journeyCreate);
 
   const JourneyCreateRequest jcRequest{.name = UPDATED_NAME};
-  journeyIdPut(originalJourney.id, jcRequest);
+  journeyIdPut("TOKEN", originalJourney.id, jcRequest);
 
-  const Journey updatedJourney = server->journeyRepository->get(originalJourney.id);
+  const Journey updatedJourney = testServer->journeyRepo->selectById(originalJourney.id);
   ASSERT_EQ(updatedJourney.name, UPDATED_NAME);
 }

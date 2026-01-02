@@ -1,41 +1,13 @@
 #include "authentication/TokenVerifier.hpp"
 #include "http/middleware/AuthMiddleware.hpp"
+#include "support/fixtures/AuthMiddlewareFixture.hpp"
 #include "support/mocks/MockTokenVerifier.hpp"
 #include <crow/http_request.h>
 #include <gtest/gtest.h>
 #include <memory>
-#include <utility>
-
-using std::format;
-using std::make_shared;
-using std::make_unique;
-using std::shared_ptr;
-
-class AuthMiddlewareFixture : public ::testing::Test {
-public:
-  std::shared_ptr<TokenVerifier> tokenVerifier;
-  std::unique_ptr<AuthMiddleware> authMiddleware;
-
-  crow::request makeRequestWithAuthHeader(const std::string &authHeader) {
-    crow::request r{};
-    r.headers.emplace("Authorization", authHeader);
-    return r;
-  }
-
-private:
-  void SetUp() override {
-    tokenVerifier = make_shared<MockTokenVerifier>();
-    authMiddleware = make_unique<AuthMiddleware>();
-    authMiddleware->setVerifier(std::move(tokenVerifier));
-  }
-
-  void TearDown() override {
-    authMiddleware.reset();
-    tokenVerifier.reset();
-  }
-};
 
 TEST_F(AuthMiddlewareFixture, MissingAuthHeaderReturns401AndMessage) {
+  acceptAllTokens();
   crow::request request{};
   crow::response response{};
   AuthMiddleware::context context{};
@@ -47,8 +19,9 @@ TEST_F(AuthMiddlewareFixture, MissingAuthHeaderReturns401AndMessage) {
 }
 
 TEST_F(AuthMiddlewareFixture, NonBearerAuthReturns401AndMessage) {
+  acceptAllTokens();
   string authHeader = "DOES_NOT_SAY_BEARER";
-  crow::request request = makeRequestWithAuthHeader(authHeader);
+  crow::request request = createRequest(authHeader);
   crow::response response{};
   AuthMiddleware::context context{};
   authMiddleware->before_handle(request, response, context);
@@ -59,8 +32,8 @@ TEST_F(AuthMiddlewareFixture, NonBearerAuthReturns401AndMessage) {
 }
 
 TEST_F(AuthMiddlewareFixture, InvalidTokenReturns401AndDoesNotAuthorize) {
-  string authHeader = "Bearer INVALID_AUTH_TOKEN";
-  crow::request request = makeRequestWithAuthHeader(authHeader);
+  rejectAllTokens();
+  crow::request request = createRequest("Bearer INVALID_AUTH_TOKEN");
   crow::response response{};
   AuthMiddleware::context context{};
   authMiddleware->before_handle(request, response, context);
@@ -70,8 +43,9 @@ TEST_F(AuthMiddlewareFixture, InvalidTokenReturns401AndDoesNotAuthorize) {
 }
 
 TEST_F(AuthMiddlewareFixture, ValidTokenSetsContextAndLeavesResponseUntouched) {
-  string authHeader = format("Bearer {}", MockTokenVerifier::TESTING_TOKEN);
-  crow::request request = makeRequestWithAuthHeader(authHeader);
+  acceptAllTokens();
+  std::string TOKEN_AND_SUB = "FOO";
+  crow::request request = createRequest(std::format("Bearer {}", TOKEN_AND_SUB));
   crow::response response{};
   AuthMiddleware::context context{};
   authMiddleware->before_handle(request, response, context);
@@ -79,6 +53,5 @@ TEST_F(AuthMiddlewareFixture, ValidTokenSetsContextAndLeavesResponseUntouched) {
   EXPECT_TRUE(context.authorized);
   EXPECT_EQ(response.code, 200);
   EXPECT_TRUE(response.body.empty());
-  EXPECT_EQ(context.token.sub, MockTokenVerifier::TESTING_SUBJECT);
-  EXPECT_EQ(context.token.issuer, MockTokenVerifier::TESTING_ISSUER);
+  EXPECT_EQ(context.verifiedToken.sub, TOKEN_AND_SUB);
 }
