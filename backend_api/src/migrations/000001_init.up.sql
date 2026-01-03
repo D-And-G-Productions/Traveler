@@ -1,0 +1,7 @@
+BEGIN;
+
+CREATE TABLE users(
+  id BIGSERIAL;
+)
+
+COMMIT;

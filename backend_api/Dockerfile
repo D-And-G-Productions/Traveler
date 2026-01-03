@@ -36,6 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   python3-pip \
   unzip \
   build-essential \
+  ripgrep \
   && rm -rf /var/lib/apt/lists/*
 
 RUN curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz \

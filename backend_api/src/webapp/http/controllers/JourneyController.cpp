@@ -57,8 +57,10 @@ crow::response JourneyController::updateJourney(
     response = crow::response(crow::NO_CONTENT);
   } catch (FailedToReadJson &) {
     response = crow::response(crow::status::BAD_REQUEST, "Invalid JSON");
+  } catch (ConversionFromJsonFailed &) {
+    response = crow::response(crow::BAD_REQUEST, "Missing/invalid fields");
   } catch (JourneyNotFoundError &) {
-    return crow::response{crow::NOT_FOUND, "Not Found"};
+    response = crow::response{crow::NOT_FOUND, "Not Found"};
   }
   return response;
 }

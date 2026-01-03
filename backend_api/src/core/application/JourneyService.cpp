@@ -1,28 +1,30 @@
 #include "JourneyService.hpp"
 #include "repository/JourneyRepository.hpp"
+#include <functional>
 
 Journey JourneyService::createJourney(const JourneyCreate &journeyCreate) {
   Journey created{};
-  unitOfWork->run([&] { created = repository->insert(journeyCreate); });
+  std::function<void()> fn = [&] { created = repository->insert(journeyCreate); };
+  unitOfWork->run(fn);
   return created;
 }
 
 std::vector<Journey> JourneyService::getJourneys(const int64_t userId) {
-  return repository->selectByUserId(userId);
+  std::vector<Journey> journeys{};
+  std::function<void()> fn = [&] { journeys = repository->selectByUserId(userId); };
+  unitOfWork->run(fn);
+  return journeys;
 }
 
+// TODO: Descrimination of userId should be done in the journey repository itself.
 Journey JourneyService::getJourney(const int64_t userId, const int64_t journeyId) {
-  // TODO: Implement this by a search for a record matching both Ids.
-
-  try {
-    Journey journey = repository->selectById(journeyId);
-    if (journey.userId != userId)
-      throw std::invalid_argument("");
-
-    return journey;
-  } catch (std::invalid_argument &error) {
+  Journey journey;
+  std::function<void()> fn = [&] { journey = repository->selectById(journeyId); };
+  unitOfWork->run(fn);
+  if (journey.userId != userId) {
     throw JourneyNotFoundError("");
   }
+  return journey;
 }
 
 // TODO: Descrimination of userId should be done in the journey repository itself.
@@ -34,6 +36,9 @@ Journey JourneyService::updateJourney(
   if (userId != journeyCreate.userId) {
     throw JourneyNotFoundError("");
   }
-  Journey updatedJourney = repository->update(journeyId, journeyCreate);
+
+  Journey updatedJourney;
+  std::function<void()> fn = [&] { updatedJourney = repository->update(journeyId, journeyCreate); };
+  unitOfWork->run(fn);
   return updatedJourney;
 }
