@@ -4,6 +4,7 @@ BinPackArguments: false
 BinPackParameters: OnePerLine
 AlignAfterOpenBracket: BlockIndent
 AllowAllArgumentsOnNextLine: true
-AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: false
 PenaltyBreakBeforeFirstCallParameter: 1
 BreakTemplateDeclarations: "Yes"
+BreakConstructorInitializers: AfterColon

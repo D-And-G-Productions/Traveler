@@ -1,5 +1,5 @@
 #pragma once
-#include <iostream>
+
 #include <stdexcept>
 #include <string>
 
@@ -29,7 +29,6 @@ inline std::string toString(const Mode mode) {
   case Mode::CYCLING:
     return "cycling";
   default:
-    std::cout << "Not a mode\n" << std::endl;
     throw std::invalid_argument("Unknown mode");
   }
 }

@@ -8,6 +8,7 @@
 #include "http/middleware/AuthMiddleware.hpp"
 #include "repository/JourneyRepository.hpp"
 #include "support/TestConstants.hpp"
+#include "support/mocks/FakeUnitOfWork.hpp"
 #include "support/mocks/MockJourneyRepository.hpp"
 #include "support/mocks/MockTokenVerifier.hpp"
 #include "support/mocks/MockUserRepository.hpp"
@@ -73,7 +74,9 @@ protected:
   }
 
   void setupControllers() override {
-    journeyController = make_shared<JourneyController>(journeyRepo, userRepo);
+    shared_ptr<UnitOfWork> uow = make_shared<FakeUnitOfWork>();
+    shared_ptr<JourneyService> journeyService = make_shared<JourneyService>(uow, journeyRepo);
+    journeyController = make_shared<JourneyController>(journeyRepo, userRepo, journeyService);
     healthController = make_shared<HealthController>();
     meController = make_shared<MeController>(userRepo);
   }
