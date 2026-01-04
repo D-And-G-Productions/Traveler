@@ -32,13 +32,10 @@ public:
 
 private:
   crow::response queryMe(context &context, const crow::request &request) {
-    string subject = context.token.sub;
+    string subject = context.verifiedToken.sub;
     User user = userRepository->get(subject);
     UserResponse userResponse = toUserResponse(user);
-    crow::response response{};
-    response.code = crow::OK;
-    response.add_header("Content-Type", "application/json");
-    response.body = api::json::toJson(userResponse).dump();
-    return response;
+    crow::json::wvalue json = api::json::toJson(userResponse);
+    return crow::response{crow::OK, "application/json", json.dump()};
   };
 };

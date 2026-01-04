@@ -34,17 +34,17 @@ public:
   virtual void start() = 0;
 
   void initialise() {
-    setupMiddleware();
     setupRepositories();
+    setupMiddleware();
     setupControllers();
     registerRoutes();
     application.validate();
   }
 
 protected:
-  virtual void setupMiddleware() = 0;
-
   virtual void setupRepositories() = 0;
+
+  virtual void setupMiddleware() = 0;
 
   virtual void setupControllers() = 0;
 

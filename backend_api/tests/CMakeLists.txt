@@ -1,5 +1,6 @@
 INCLUDE(GoogleTest)
 
+
 ADD_LIBRARY(TestsSupport INTERFACE)
 
 TARGET_INCLUDE_DIRECTORIES(TestsSupport INTERFACE
@@ -12,22 +13,30 @@ TARGET_LINK_LIBRARIES(TestsSupport INTERFACE
   GTest::gtest_main
 )
 
-ADD_EXECUTABLE(RoutesTests
-  ./test_routes/TestJourneyGet.cpp
-  ./test_routes/TestJourneyIdGet.cpp
-  ./test_routes/TestJourneyPost.cpp
-  ./test_routes/TestJourneyIdPut.cpp
-  ./routes/JourneyIdDeleteTest.cpp
-  ./test_routes/TestHealthGet.cpp
-  ./test_routes/TestMeGet.cpp
-)
+ADD_EXECUTABLE(TestJourneyIdGet ./test_routes/TestJourneyIdGet.cpp)
+TARGET_LINK_LIBRARIES(TestJourneyIdGet PRIVATE TestsSupport)
+GTEST_DISCOVER_TESTS(TestJourneyIdGet)
 
-ADD_EXECUTABLE(MiddlewareTests
-  ./test_middleware/TestAuthMiddleware.cpp
-)
+ADD_EXECUTABLE(TestJourneyPost ./test_routes/TestJourneyPost.cpp)
+TARGET_LINK_LIBRARIES(TestJourneyPost PRIVATE TestsSupport)
+GTEST_DISCOVER_TESTS(TestJourneyPost)
 
-TARGET_LINK_LIBRARIES(RoutesTests PRIVATE TestsSupport)
-TARGET_LINK_LIBRARIES(MiddlewareTests PRIVATE TestsSupport)
+ADD_EXECUTABLE(TestJourneyIdPut ./test_routes/TestJourneyIdPut.cpp)
+TARGET_LINK_LIBRARIES(TestJourneyIdPut PRIVATE TestsSupport)
+GTEST_DISCOVER_TESTS(TestJourneyIdPut)
 
-GTEST_DISCOVER_TESTS(RoutesTests)
-# GTEST_DISCOVER_TESTS(MiddlewareTests)
+ADD_EXECUTABLE(TestJourneyIdDelete ./test_routes/TestJourneyIdDelete.cpp)
+TARGET_LINK_LIBRARIES(TestJourneyIdDelete PRIVATE TestsSupport)
+GTEST_DISCOVER_TESTS(TestJourneyIdDelete)
+
+ADD_EXECUTABLE(TestHealthGet ./test_routes/TestHealthGet.cpp)
+TARGET_LINK_LIBRARIES(TestHealthGet PRIVATE TestsSupport)
+GTEST_DISCOVER_TESTS(TestHealthGet)
+
+ADD_EXECUTABLE(TestMeGet ./test_routes/TestMeGet.cpp)
+TARGET_LINK_LIBRARIES(TestMeGet PRIVATE TestsSupport)
+GTEST_DISCOVER_TESTS(TestMeGet)
+
+ADD_EXECUTABLE(AuthMiddlewareTests ./test_middleware/TestAuthMiddleware.cpp)
+TARGET_LINK_LIBRARIES(AuthMiddlewareTests PRIVATE TestsSupport)
+GTEST_DISCOVER_TESTS(AuthMiddlewareTests)

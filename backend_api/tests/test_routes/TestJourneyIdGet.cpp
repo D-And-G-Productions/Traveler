@@ -11,22 +11,22 @@
 
 TEST_F(JourneyIdGet, ExistingIdReturnsOk) {
   JourneyCreate journeyCreate{};
-  Journey expectedRecord = server->journeyRepository->create(journeyCreate);
+  Journey expectedRecord = testServer->journeyRepo->insert(journeyCreate);
 
-  cpr::Response response = journeyGetId(expectedRecord.id);
+  cpr::Response response = journeyGetId(expectedRecord.id, "TOKEN");
   EXPECT_EQ(response.status_code, cpr::status::HTTP_OK) << response.text << "\n";
 }
 
 TEST_F(JourneyIdGet, NonExistentIdReturnsNotFound) {
   const int64_t NON_EXISTENT_ID = 0;
-  cpr::Response response = journeyGetId(NON_EXISTENT_ID);
+  cpr::Response response = journeyGetId(NON_EXISTENT_ID, "TOKEN");
   EXPECT_EQ(response.status_code, crow::NOT_FOUND) << response.text << "\n";
 }
 
 TEST_F(JourneyIdGet, ReturnJourneyWithMatchingId) {
   JourneyCreate journeyCreate{.name = "TEST_NAME"};
-  Journey created = server->journeyRepository->create(journeyCreate);
-  cpr::Response response = journeyGetId(created.id);
+  Journey created = testServer->journeyRepo->insert(journeyCreate);
+  cpr::Response response = journeyGetId(created.id, "TOKEN");
   crow::json::rvalue parsed = crow::json::load(response.text);
 
   ASSERT_TRUE(parsed);

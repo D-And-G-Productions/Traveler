@@ -23,17 +23,17 @@ public:
     return iterator->second;
   }
 
-  void update(const int64_t id, const UserUpdate &userUpdate) override {
+  User update(const int64_t id, const UserUpdate &userUpdate) override {
     std::lock_guard<std::mutex> lock(mutex);
     auto iterator = idToSubject.find(id);
     requireUserExists(iterator, id);
     std::string subject = iterator->second;
-    updateBySubject(subject, userUpdate);
+    return updateBySubject(subject, userUpdate);
   }
 
-  void update(const string &subject, const UserUpdate &userUpdate) override {
+  User update(const string &subject, const UserUpdate &userUpdate) override {
     std::lock_guard<std::mutex> lock(mutex);
-    updateBySubject(subject, userUpdate);
+    return updateBySubject(subject, userUpdate);
   }
 
   User insert(const std::string &subject) override {
@@ -75,10 +75,11 @@ private:
     return iterator;
   }
 
-  void updateBySubject(const string &subject, const UserUpdate &userUpdate) {
+  User updateBySubject(const string &subject, const UserUpdate &userUpdate) {
     Iterator iterator = findUserBySubject(subject);
     User &user = iterator->second;
     updateUser(user, userUpdate);
+    return user;
   }
 
   void updateUser(User &user, const UserUpdate &userUpdate) {

@@ -8,18 +8,24 @@
 #include <crow/json.h>
 #include <gtest/gtest.h>
 
-TEST_F(JourneyPost, PostReturnsOk) {
-  JourneyCreateRequest journeyCreate{};
-  cpr::Response response = journeyPost(journeyCreate);
+TEST_F(JourneyPost, PostReturnsCreated) {
+  JourneyCreateRequest journeyCreateRequest{};
+  cpr::Response response = journeyPost(testUser.token, journeyCreateRequest);
   EXPECT_EQ(response.status_code, cpr::status::HTTP_CREATED) << response.text << "\n";
 }
 
-TEST_F(JourneyPost, PostReturnsJourneyWithId) {
-  JourneyCreateRequest journeyCreate{.name = "TEST_NAME"};
-  cpr::Response response = journeyPost(journeyCreate);
+TEST_F(JourneyPost, PostBodyIsJson) {
+  JourneyCreateRequest jcRequest{.name = "TEST_NAME"};
+  cpr::Response response = journeyPost(testUser.token, jcRequest);
   crow::json::rvalue parsed = crow::json::load(response.text);
-
   ASSERT_TRUE(parsed);
-  JourneyResponse jResponse = api::json::fromJson<JourneyResponse>(parsed);
-  EXPECT_EQ(jResponse.name, journeyCreate.name);
+}
+
+TEST_F(JourneyPost, PostIsReflectedInDB) {
+  JourneyCreateRequest jcRequest{.name = "TEST_NAME"};
+  cpr::Response response = journeyPost(testUser.token, jcRequest);
+  crow::json::rvalue json = crow::json::load(response.text);
+  JourneyResponse journeyResponse = api::json::fromJson<JourneyResponse>(json);
+  Journey journeyFromDB = getJourney(journeyResponse.id);
+  EXPECT_EQ(journeyFromDB.id, journeyResponse.id);
 }

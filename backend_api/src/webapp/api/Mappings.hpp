@@ -48,6 +48,7 @@ inline JourneyResponse toJourneyResponse(const Journey &journey) {
 inline Journey toJourney(const int64_t &id_, const JourneyCreate &journeyCreate) {
   return Journey{
       .id = id_,
+      .userId = journeyCreate.userId,
       .createdAt = "PLACEHOLDER_TIME",
       .updatedAt = "PLACEHOLDER_TIME",
       .name = journeyCreate.name,

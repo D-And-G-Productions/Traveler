@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+#NOTE: turn this off for zsh
 set -euo pipefail
 
 SCRIPT_DIRECTORY="$(dirname "$0")"
@@ -7,7 +8,7 @@ PARENT_DIRECTORY="$SCRIPT_DIRECTORY/../.."
 cd "$PARENT_DIRECTORY"
 
 cleanup() {
-  docker compose stop dev >/dev/null 2>&1 || true
+    docker compose stop dev >/dev/null 2>&1 || true
 }
 
 trap cleanup EXIT INT TERM
