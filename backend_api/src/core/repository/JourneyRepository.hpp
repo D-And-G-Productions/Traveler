@@ -12,5 +12,6 @@ public:
   virtual Journey selectById(int64_t id) = 0;
   virtual std::vector<Journey> selectByUserId(int64_t userId) = 0;
   virtual Journey update(int64_t id, JourneyCreate &updatedJourney) = 0;
+  virtual void del(int64_t id) = 0;
   virtual std::vector<Journey> list() = 0;
 };
