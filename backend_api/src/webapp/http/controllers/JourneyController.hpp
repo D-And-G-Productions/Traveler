@@ -21,6 +21,7 @@
 using context = AuthMiddleware::context;
 using crow::request;
 using crow::response;
+using crow::HTTPMethod::DELETE;
 using crow::HTTPMethod::GET;
 using crow::HTTPMethod::POST;
 using crow::HTTPMethod::PUT;
@@ -52,6 +53,12 @@ public:
         .methods(GET)([this, &app](const crow::request &request, const long id) {
           context &context = app.get_context<AuthMiddleware>(request);
           return getJourney(context, request, static_cast<int64_t>(id));
+        });
+
+    CROW_ROUTE(app, "/journey/<int>")
+        .methods(DELETE)([this, &app](const crow::request &request, const long id) {
+          context &context = app.get_context<AuthMiddleware>(request);
+          return deleteJourney(context, request, static_cast<int64_t>(id));
         });
 
     CROW_ROUTE(app, "/journey/<int>")
@@ -130,6 +137,22 @@ private:
     }
 
     return buildResponseWithJourneyBody(crow::OK, journey);
+  }
+
+  response deleteJourney(const context &context, const request &request, const int64_t id) {
+    Journey journey;
+    try {
+
+      journey = journeyRepo->selectById(id);
+      if (journey.userId == context.userId) {
+        journeyRepo->del(id);
+      } else {
+        return crow::response(crow::NOT_FOUND, "Not Found");
+      }
+    } catch (const std::invalid_argument &error) {
+      return crow::response(crow::NOT_FOUND, "Not Found");
+    }
+    return crow::response(crow::NO_CONTENT, "No Content");
   }
 
   response buildResponseWithJourneyBody(const crow::status code, const Journey &journey) {

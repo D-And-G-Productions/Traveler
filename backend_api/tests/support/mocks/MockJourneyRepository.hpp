@@ -8,6 +8,7 @@
 #include <atomic>
 #include <cstdint>
 #include <mutex>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -65,6 +66,16 @@ public:
     newJourney.createdAt = it->createdAt;
     *it = newJourney;
     return *it; // copy
+  }
+
+  void del(int64_t id) override {
+    std::lock_guard<std::mutex> lock(journeysMutex);
+
+    auto iterator = findByIdLocked(id);
+    if (iterator == journeys.end()) {
+      throw std::invalid_argument("Id does not exist");
+    }
+    journeys.erase(iterator);
   }
 
   std::vector<Journey> list() override {
