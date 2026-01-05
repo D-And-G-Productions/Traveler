@@ -1,42 +1,74 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { GlobalStyles } from './styles';
 import { auth } from '../FirebaseConfig';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
 
+    const handleLogin = async () => {
+        setLoading(true);
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            router.replace('/travel');
+        } catch (error: any) {
+            alert(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const signIn = async () => {
+    const resetPassword = async () => {
+        if (!email) return alert("Please enter your email first.");
         try {
-            const user = await signInWithEmailAndPassword(auth, email, password);
-            if (user) router.replace('/travel');
+            await sendPasswordResetEmail(auth, email);
+            alert('Reset email sent.');
         } catch (error: any) {
-            console.log(error);
-            alert('Sign in failed: ' + error.message);
+            alert(error.message);
         }
-    }
-    const signUp = async () => {
-        try {
-            const user = await createUserWithEmailAndPassword(auth, email, password);
-            if (user) router.replace('/travel');
-        } catch (error: any) {
-            console.log(error);
-            alert('Sign in failed: ' + error.message);
-        }
-    }
+    };
 
     return (
         <View style={GlobalStyles.centerContainer}>
             <View style={GlobalStyles.card}>
-                <Text style={GlobalStyles.title}>Welcome</Text>
-                <TextInput style={GlobalStyles.input} placeholder="Email" value={email} onChangeText={setEmail} />
-                <TextInput style={GlobalStyles.input} placeholder="Password" value={password} onChangeText={setPassword} />
-                <Button title="Login" onPress={signIn} />
-                <Button title="Make an Account" onPress={signUp} />
+                <Text style={GlobalStyles.title}>Traveler Login</Text>
+
+                <Text style={GlobalStyles.label}>Email</Text>
+                <TextInput
+                    style={GlobalStyles.input}
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                />
+
+                <Text style={GlobalStyles.label}>Password</Text>
+                <TextInput
+                    style={GlobalStyles.input}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                />
+
+                <TouchableOpacity
+                    style={GlobalStyles.primaryButton}
+                    onPress={handleLogin}
+                    disabled={loading}
+                >
+                    {loading ? <ActivityIndicator color="#FFF" /> : <Text style={GlobalStyles.primaryButtonText}>Log In</Text>}
+                </TouchableOpacity>
+
+                {/* UPDATED BUTTON: Navigates to Register Screen */}
+                <TouchableOpacity onPress={() => router.push('/register')} style={{ marginTop: 15 }}>
+                    <Text style={GlobalStyles.secondaryButtonText}>Create an Account</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={resetPassword}>
+                    <Text style={GlobalStyles.linkText}>Forgot Password?</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
