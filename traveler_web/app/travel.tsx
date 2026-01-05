@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, SafeAreaView } from 'react-native';
-import { useUser } from '../context/UserContext';
+import { getAuth } from '@firebase/auth';
+import { auth } from '../FirebaseConfig';
+import { router } from 'expo-router';
 import { GlobalStyles } from './styles';
 
 export default function TravelFormScreen() {
-    const { email } = useUser();
+    getAuth().onAuthStateChanged((user) => {
+        if (!user) router.replace('/');
+    });
+
 
     // 1. All states as strings
     const [start, setStart] = useState<string>('');
@@ -14,7 +19,6 @@ export default function TravelFormScreen() {
     const submitTrip = async () => {
         // 2. Prepare string-based payload
         const payload = {
-            email: email,
             start: start,
             destination: dest,
             arrivalTime: time ? new Date(time).toISOString() : '',
@@ -57,6 +61,7 @@ export default function TravelFormScreen() {
             />
 
             <Button title="Submit Trip" onPress={submitTrip} />
+            <Button title="Sign Out" onPress={() => auth.signOut()} />
         </SafeAreaView>
     );
 }

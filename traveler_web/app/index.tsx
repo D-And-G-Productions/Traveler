@@ -1,25 +1,42 @@
-import React from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useUser } from '../context/UserContext';
+import React, { useState } from 'react';
+import { View, TextInput, Button, Text } from 'react-native';
+import { router } from 'expo-router';
 import { GlobalStyles } from './styles';
+import { auth } from '../FirebaseConfig';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginScreen() {
-    const router = useRouter();
-    const { email, setEmail } = useUser();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
-    const handleLogin = () => {
-        if (email.includes('@')) {
-            router.replace('/travel'); // Moves to travel.tsx
+
+    const signIn = async () => {
+        try {
+            const user = await signInWithEmailAndPassword(auth, email, password);
+            if (user) router.replace('/travel');
+        } catch (error: any) {
+            console.log(error);
+            alert('Sign in failed: ' + error.message);
         }
-    };
+    }
+    const signUp = async () => {
+        try {
+            const user = await createUserWithEmailAndPassword(auth, email, password);
+            if (user) router.replace('/travel');
+        } catch (error: any) {
+            console.log(error);
+            alert('Sign in failed: ' + error.message);
+        }
+    }
 
     return (
         <View style={GlobalStyles.centerContainer}>
             <View style={GlobalStyles.card}>
                 <Text style={GlobalStyles.title}>Welcome</Text>
                 <TextInput style={GlobalStyles.input} placeholder="Email" value={email} onChangeText={setEmail} />
-                <Button title="Login" onPress={handleLogin} />
+                <TextInput style={GlobalStyles.input} placeholder="Password" value={password} onChangeText={setPassword} />
+                <Button title="Login" onPress={signIn} />
+                <Button title="Make an Account" onPress={signUp} />
             </View>
         </View>
     );
