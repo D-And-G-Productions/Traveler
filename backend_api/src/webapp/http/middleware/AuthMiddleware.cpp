@@ -12,9 +12,7 @@ void AuthMiddleware::setUserRepository(std::shared_ptr<UserRepository> userRepos
 void AuthMiddleware::after_handle(crow::request &, crow::response &, context &) {}
 
 void AuthMiddleware::before_handle(
-    crow::request &request,
-    crow::response &response,
-    context &context
+    crow::request &request, crow::response &response, context &context
 ) {
   const std::string auth = request.get_header_value("Authorization");
   if (auth.rfind("Bearer ", 0) != 0) {

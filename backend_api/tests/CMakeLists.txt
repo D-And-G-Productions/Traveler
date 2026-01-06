@@ -1,5 +1,4 @@
 INCLUDE(GoogleTest)
-
 ADD_LIBRARY(TestsSupport INTERFACE)
 
 TARGET_INCLUDE_DIRECTORIES(TestsSupport INTERFACE
@@ -27,6 +26,10 @@ GTEST_DISCOVER_TESTS(TestJourneyPost)
 ADD_EXECUTABLE(TestJourneyIdPut ./test_routes/TestJourneyIdPut.cpp)
 TARGET_LINK_LIBRARIES(TestJourneyIdPut PRIVATE TestsSupport)
 GTEST_DISCOVER_TESTS(TestJourneyIdPut)
+
+ADD_EXECUTABLE(TestJourneyIdDelete ./test_routes/TestJourneyIdDelete.cpp)
+TARGET_LINK_LIBRARIES(TestJourneyIdDelete PRIVATE TestsSupport)
+GTEST_DISCOVER_TESTS(TestJourneyIdDelete)
 
 ADD_EXECUTABLE(TestHealthGet ./test_routes/TestHealthGet.cpp)
 TARGET_LINK_LIBRARIES(TestHealthGet PRIVATE TestsSupport)

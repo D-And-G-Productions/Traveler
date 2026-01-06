@@ -1,7 +1,12 @@
 #pragma once
 
-#include "api/dto/JourneyCreateRequest.hpp"
+
 #include "application/JourneyService.hpp"
+#include "api/Mappings.hpp"
+#include "api/dto/JourneyCreateRequest.hpp"
+#include "api/dto/JourneyResponse.hpp"
+#include "api/json/JsonConversion.hpp"
+#include "domain/JourneyCreate.hpp"
 #include "http/middleware/AuthMiddleware.hpp"
 #include "repository/JourneyRepository.hpp"
 #include "repository/UserRepository.hpp"
@@ -16,6 +21,9 @@
 #include <vector>
 
 using context = AuthMiddleware::context;
+using crow::request;
+using crow::response;
+using crow::HTTPMethod::DELETE;
 using crow::HTTPMethod::GET;
 using crow::HTTPMethod::POST;
 using crow::HTTPMethod::PUT;
@@ -48,6 +56,7 @@ private:
   crow::response createJourney(const context &context, const crow::request &request);
   crow::response listJourneys(const context &context, const crow::request &request);
   crow::response getJourney(const context &context, const crow::request &request, const int64_t id);
+  crow::response deleteJourney(const context &context, const crow::request &request, const int64_t id) {
   crow::response
   updateJourney(const context &context, const crow::request &request, const int64_t id);
   crow::json::rvalue parseJson(const std::string body);
