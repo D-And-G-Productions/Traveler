@@ -30,42 +30,44 @@ public:
 
     std::lock_guard<std::mutex> lock(journeysMutex);
     journeys.push_back(journey);
-    return journeys.back(); // copy
+    return journeys.back();
   }
 
   Journey selectById(int64_t id) override {
     std::lock_guard<std::mutex> lock(journeysMutex);
     auto it = findByIdLocked(id);
-    if (it == journeys.end()) {
-      throw std::invalid_argument("Id does not exist");
-    }
+    requireJourneyExistsLocked(it, journeys);
     return *it; // copy
   }
 
   std::vector<Journey> selectByUserId(int64_t userId) override {
     std::vector<Journey> result{};
-    std::cout << "Select By User Id 1" << std::endl;
     std::lock_guard<std::mutex> lock(journeysMutex);
     for (const auto &j : journeys) {
       if (j.userId == userId)
         result.push_back(j);
     }
-    std::cout << "Select By User Id 2" << std::endl;
     return result;
   }
 
-  Journey update(int64_t id, JourneyCreate &updatedJourney) override {
+  Journey update(const int64_t id, const JourneyCreate &updatedJourney) override {
     Journey newJourney = toJourney(id, updatedJourney);
 
     std::lock_guard<std::mutex> lock(journeysMutex);
     auto it = findByIdLocked(id);
-    if (it == journeys.end()) {
-      throw std::invalid_argument("Id does not exist");
-    }
-
+    requireJourneyExistsLocked(it, journeys);
     newJourney.createdAt = it->createdAt;
     *it = newJourney;
     return *it; // copy
+  }
+
+  void requireJourneyExistsLocked(
+      const std::vector<Journey>::iterator &iterator,
+      std::vector<Journey> &journeys
+  ) {
+    if (iterator == journeys.end()) {
+      throw JourneyNotFoundError("Id does not exist");
+    }
   }
 
   void del(int64_t id) override {
