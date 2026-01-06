@@ -69,7 +69,7 @@ public:
       throw JourneyNotFoundError("Id does not exist");
     }
   }
-  
+
   void del(int64_t id) override {
     std::lock_guard<std::mutex> lock(journeysMutex);
 

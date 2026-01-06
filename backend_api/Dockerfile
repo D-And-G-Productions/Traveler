@@ -37,6 +37,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   unzip \
   build-essential \
   ripgrep \
+  clang-format \
   && rm -rf /var/lib/apt/lists/*
 
 RUN curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz \
