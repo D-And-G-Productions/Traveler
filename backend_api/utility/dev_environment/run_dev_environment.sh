@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 #NOTE: turn this off for zsh
-set -euo pipefail
+# set -euo pipefail
 
 SCRIPT_DIRECTORY="$(dirname "$0")"
 PARENT_DIRECTORY="$SCRIPT_DIRECTORY/../.."
