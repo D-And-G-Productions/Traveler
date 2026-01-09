@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     zsh \
     ca-certificates \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # Install LATEST Neovim (Required for LazyVim)
