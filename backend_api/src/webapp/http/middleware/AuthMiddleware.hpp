@@ -7,7 +7,6 @@
 
 class AuthMiddleware {
 public:
-  // TODO: Add user id to the token. 2025-12-30
   struct context {
     bool authorized = false;
     VerifiedToken verifiedToken;
