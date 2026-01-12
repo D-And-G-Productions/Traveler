@@ -18,6 +18,7 @@ TARGET_INCLUDE_DIRECTORIES(WebserverLib
 TARGET_LINK_LIBRARIES(WebserverLib
   PUBLIC
     Crow::Crow
+    cpr::cpr
     Core
 )
 
