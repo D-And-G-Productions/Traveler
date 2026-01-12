@@ -1,4 +1,8 @@
 #include "Mappings.hpp"
+#include "api/dto/LocationUpdateRequestContract.hpp"
+#include "domain/Location.hpp"
+#include "domain/LocationUpdate.hpp"
+#include <optional>
 
 UserResponseContract ContractMappings::toUserResponseContract(const User &u)
 {
@@ -54,12 +58,27 @@ JourneyResponseContract ContractMappings::toJourneyResponseContract(const Journe
   };
 }
 
+LocationUpdate ContractMappings::toLocationUpdate(LocationUpdateRequestContract &l)
+{
+  return {
+      .label = l.label,
+      .latitude = l.latitude,
+      .longitude = l.longitude,
+  };
+}
+
+std::optional<LocationUpdate>
+ContractMappings::toOptionalLocationUpdate(std::optional<LocationUpdateRequestContract> &l)
+{
+  return l ? std::optional<LocationUpdate>(toLocationUpdate(*l)) : std::nullopt;
+}
+
 JourneyUpdate ContractMappings::toJourneyUpdate(JourneyUpdateRequestContract &j)
 {
   return {
       .name = j.name,
-      .source = j.source,
-      .destination = j.destination,
+      .source = toOptionalLocationUpdate(j.source),
+      .destination = toOptionalLocationUpdate(j.destination),
       .arrivalTime = j.arrivalTime,
       .mode = j.mode,
   };

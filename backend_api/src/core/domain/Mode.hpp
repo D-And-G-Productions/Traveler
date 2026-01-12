@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <stdexcept>
 #include <string>
 
@@ -41,5 +42,10 @@ inline std::string toString(const Mode mode)
   default:
     throw std::invalid_argument("Unknown mode");
   }
+}
+
+inline std::optional<std::string> toOptionalString(const std::optional<Mode> &mode)
+{
+  return mode ? std::optional<std::string>(ModeUtil::toString(*mode)) : std::nullopt;
 }
 } // namespace ModeUtil

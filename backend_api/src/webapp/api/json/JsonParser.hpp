@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <optional>
 
+// TODO: ENUM Mode reads to/from json should be done here.
 class JsonParsing
 {
 public:
@@ -23,6 +24,18 @@ public:
     }
     requireFieldIsAString(json, field);
     return json[field].s();
+  }
+
+  static std::optional<double>
+  readOptionalDouble(const crow::json::rvalue &json, const std::string &field)
+  {
+    requireField(json, field);
+    if (isFieldNull(json, field))
+    {
+      return std::nullopt;
+    }
+    requireFieldIsADouble(json, field);
+    return json[field].d();
   }
 
   static std::string readString(const crow::json::rvalue &json, const std::string &field)

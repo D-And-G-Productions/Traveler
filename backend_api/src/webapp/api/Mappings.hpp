@@ -24,5 +24,10 @@ LocationResponseContract toLocationResponseContract(const Location &l);
 
 JourneyResponseContract toJourneyResponseContract(const Journey &j);
 
+LocationUpdate toLocationUpdate(LocationUpdateRequestContract &l);
+
+std::optional<LocationUpdate>
+toOptionalLocationUpdate(std::optional<LocationUpdateRequestContract> &l);
+
 JourneyUpdate toJourneyUpdate(JourneyUpdateRequestContract &j);
 } // namespace ContractMappings

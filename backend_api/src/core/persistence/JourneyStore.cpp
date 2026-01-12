@@ -1,5 +1,7 @@
 #include "JourneyStore.hpp"
 #include "domain/JourneyCreate.hpp"
+#include "domain/LocationUpdate.hpp"
+#include "domain/Mode.hpp"
 #include "persistence/Queries.hpp"
 #include "persistence/Store.hpp"
 #include "persistence/StoreErrors.hpp"
@@ -120,34 +122,36 @@ void JourneyStore::deleteJourney(const int64_t journeyId, const int64_t userId)
 
 namespace
 {
+struct OptionalLocationUpdate
+{
+  std::optional<double> latitude;
+  std::optional<double> longitude;
+};
+
+OptionalLocationUpdate toOptionalLocationUpdate(const std::optional<LocationUpdate> &l)
+{
+  return l ? OptionalLocationUpdate{.latitude = l->latitude, .longitude = l->longitude,}
+           : OptionalLocationUpdate{};
+}
+
 pqxx::params buildUpdateJourneyParameters(
     const int64_t journeyId,
     const int64_t userId,
     const JourneyUpdate &update
 )
 {
-  const std::optional<double> sourceLatitude =
-      update.source ? std::optional<double>{update.source->latitude} : std::nullopt;
-  const std::optional<double> sourceLongitude =
-      update.source ? std::optional<double>{update.source->longitude} : std::nullopt;
-
-  const std::optional<double> destinationLatitude =
-      update.destination ? std::optional<double>{update.destination->latitude} : std::nullopt;
-  const std::optional<double> destinationLongitude =
-      update.destination ? std::optional<double>{update.destination->longitude} : std::nullopt;
-
-  const std::optional<std::string> modeString =
-      update.mode ? std::optional<std::string>{ModeUtil::toString(*update.mode)} : std::nullopt;
+  const OptionalLocationUpdate source = toOptionalLocationUpdate(update.source);
+  const OptionalLocationUpdate destination = toOptionalLocationUpdate(update.destination);
 
   return {
       journeyId,
       userId,
-      sourceLatitude,
-      sourceLongitude,
-      destinationLatitude,
-      destinationLongitude,
+      source.latitude,
+      source.longitude,
+      destination.latitude,
+      destination.longitude,
       update.arrivalTime,
-      modeString,
+      ModeUtil::toOptionalString(update.mode),
   };
 }
 } // namespace

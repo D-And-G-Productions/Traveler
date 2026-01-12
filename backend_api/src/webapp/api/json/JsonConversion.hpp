@@ -4,6 +4,7 @@
 #include "api/dto/JourneyResponseContract.hpp"
 #include "api/dto/JourneyUpdateRequest.hpp"
 #include "api/dto/LocationCreateRequestContract.hpp"
+#include "api/dto/LocationUpdateRequestContract.hpp"
 #include "api/dto/UserCreate.hpp"
 #include "api/dto/UserReponseContract.hpp"
 #include "api/json/JsonParser.hpp"
@@ -185,29 +186,50 @@ inline UserResponseContract fromJson(const crow::json::rvalue &json)
 }
 
 template <>
-inline crow::json::wvalue toJson(const JourneyUpdateRequestContract &j)
+inline crow::json::wvalue toJson(const LocationUpdateRequestContract &l)
 {
-  crow::json::wvalue json;
-
-  json["name"] = putOptional(j.name);
-  json["arrival_time"] = putOptional(j.arrivalTime);
-
-  if (j.mode)
-  {
-    json["mode"] = ModeUtil::toString(*j.mode);
-  }
-  else
-  {
-    json["mode"] = crow::json::wvalue(nullptr);
-  }
-
-  json["source"] = j.source ? toJson(*j.source) : crow::json::wvalue(nullptr);
-  json["destination"] = j.destination ? toJson(*j.destination) : crow::json::wvalue(nullptr);
-
-  return json;
+  return {
+      {"label", putOptional(l.label)},
+      {"latitude", putOptional(l.latitude)},
+      {"longitude", putOptional(l.longitude)},
+  };
 }
 
-inline std::optional<Location>
+template <>
+inline LocationUpdateRequestContract fromJson(const crow::json::rvalue &json)
+{
+  return {
+      .label = JsonParsing::readOptionalString(json, "label"),
+      .latitude = JsonParsing::readOptionalDouble(json, "latitude"),
+      .longitude = JsonParsing::readOptionalDouble(json, "longitude"),
+  };
+}
+
+namespace
+{
+inline crow::json::wvalue
+putOptionalLocationUpdateRequestContract(std::optional<LocationUpdateRequestContract> l)
+{
+  return l ? crow::json::wvalue(toJson<LocationUpdateRequestContract>(*l))
+           : crow::json::wvalue(nullptr);
+}
+} // namespace
+
+template <>
+inline crow::json::wvalue toJson(const JourneyUpdateRequestContract &j)
+{
+  return {
+      {"name", putOptional(j.name)},
+      {"arrival_time", putOptional(j.arrivalTime)},
+      {"mode", putOptional(ModeUtil::toOptionalString(j.mode))},
+      {"source", putOptionalLocationUpdateRequestContract(j.source)},
+      {"destination", putOptionalLocationUpdateRequestContract(j.destination)},
+  };
+}
+
+namespace
+{
+inline std::optional<LocationUpdateRequestContract>
 readOptionalLocation(const crow::json::rvalue &json, const string &field)
 {
   JsonParsing::requireField(json, field);
@@ -215,7 +237,7 @@ readOptionalLocation(const crow::json::rvalue &json, const string &field)
   {
     return std::nullopt;
   }
-  return fromJson<Location>(json[field]);
+  return fromJson<LocationUpdateRequestContract>(json[field]);
 };
 
 inline std::optional<Mode> readOptionalMode(const crow::json::rvalue &json, const string &field)
@@ -223,6 +245,7 @@ inline std::optional<Mode> readOptionalMode(const crow::json::rvalue &json, cons
   const std::optional<std::string> modeString = JsonParsing::readOptionalString(json, "mode");
   return modeString ? std::optional<Mode>{ModeUtil::toMode(*modeString)} : std::nullopt;
 };
+} // namespace
 
 template <>
 inline JourneyUpdateRequestContract fromJson(const crow::json::rvalue &json)
