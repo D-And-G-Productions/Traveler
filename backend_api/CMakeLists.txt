@@ -15,7 +15,8 @@ OPTION(WEBSERVER_BUILD_TESTS "Build tests" ON)
 # ----------------------------
 # Dependencies
 # ----------------------------
-SET(GOOGLE_TEST_URL https://github.com/google/googletest/archive/9156d4caac880b513264ecbe0aa4746a3fead3d7.zip)
+SET(GOOGLE_TEST_URL
+    https://github.com/google/googletest/archive/9156d4caac880b513264ecbe0aa4746a3fead3d7.zip)
 SET(CPR_URL https://github.com/libcpr/cpr.git)
 
 FIND_PACKAGE(Crow CONFIG REQUIRED)

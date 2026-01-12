@@ -1,45 +1,31 @@
 #pragma once
 
+#include "TestCommon.hpp"
 #include "http/middleware/AuthMiddleware.hpp"
-#include "support/mocks/MockTokenVerifier.hpp"
-#include "support/mocks/MockUserRepository.hpp"
+#include "mocks/MockTokenVerifier.hpp"
 #include <crow/http_request.h>
 #include <gtest/gtest.h>
 #include <memory>
 
-using std::format;
-using std::make_shared;
-using std::make_unique;
-using std::shared_ptr;
-using std::unique_ptr;
-
-class AuthMiddlewareFixture : public ::testing::Test {
+class AuthMiddlewareFixture : public ::testing::Test
+{
 public:
-  shared_ptr<MockTokenVerifier> mockTokenVerifier;
-  shared_ptr<UserRepository> userRepository;
-  unique_ptr<AuthMiddleware> authMiddleware;
+  std::unique_ptr<AuthMiddleware> authMiddleware;
 
-  crow::request createRequest(const std::string &bearer) {
-    crow::request request{};
-    request.headers.emplace("Authorization", bearer);
-    return request;
+protected:
+  std::shared_ptr<DBPool> pool;
+  std::shared_ptr<UserService> authService;
+  std::shared_ptr<TokenVerifier> tokenVerifier;
+
+  void SetUp() override
+  {
+    pool = std::make_shared<DBPool>(TestCommon::testDBUrl(), 1);
+    authService = std::make_shared<UserService>(pool);
+    tokenVerifier = std::make_shared<MockTokenVerifier>();
+
+    authMiddleware = std::make_unique<AuthMiddleware>();
+    authMiddleware->setDeps(tokenVerifier, authService);
   }
 
-  void acceptAllTokens() { mockTokenVerifier->acceptAll(); }
-
-  void rejectAllTokens() { mockTokenVerifier->rejectAll(); }
-
-private:
-  void SetUp() override {
-    authMiddleware = make_unique<AuthMiddleware>();
-    mockTokenVerifier = make_shared<MockTokenVerifier>();
-    authMiddleware->setVerifier(mockTokenVerifier);
-    userRepository = make_shared<MockUserRepository>();
-    authMiddleware->setUserRepository(userRepository);
-  }
-
-  void TearDown() override {
-    authMiddleware.reset();
-    mockTokenVerifier.reset();
-  }
+  void TearDown() override { TestCommon::resetDatabase(); }
 };

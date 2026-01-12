@@ -1,30 +1,35 @@
 #pragma once
 
+#include "application/UserService.hpp"
 #include "authentication/TokenVerifier.hpp"
-#include "repository/UserRepository.hpp"
 #include <crow.h>
+#include <crow/middleware.h>
 #include <memory>
+#include <optional>
 
-class AuthMiddleware {
+class AuthMiddleware : public crow::ILocalMiddleware
+{
 public:
-  struct context {
+  struct context
+  {
     bool authorized = false;
-    VerifiedToken verifiedToken;
-    int64_t userId;
+    User user;
+    Verification verification;
   };
 
-  void setVerifier(std::shared_ptr<const TokenVerifier> verifier_);
+  void setDeps(std::shared_ptr<TokenVerifier> tv, std::shared_ptr<UserService> us);
 
-  void setUserRepository(std::shared_ptr<UserRepository> userRepository_);
+  void before_handle(crow::request &request, crow::response &response, context &context);
 
-  // Snake case is the naming scheme that Crow expects.
-  void before_handle(crow::request &request, crow::response &response, context &context_);
-
-  // Snake case is the naming scheme that Crow expects.
   void after_handle(crow::request &, crow::response &, context &);
 
-private:
-  std::shared_ptr<const TokenVerifier> verifier;
+  void verifyWebTokenAndUpdateContext(const std::string javaScriptWebToken, context &context);
 
-  std::shared_ptr<UserRepository> userRepository;
+  std::optional<std::string> getAuthorizationHeader(const crow::request &request) const;
+
+  void verifyToken(const std::string &token, context &ctx) const;
+
+private:
+  std::shared_ptr<TokenVerifier> tokenVerifier;
+  std::shared_ptr<UserService> authService;
 };

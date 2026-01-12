@@ -1,0 +1,9 @@
+services:
+  api:
+    build:
+      context: ../backend_api
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    ports:
+      - "8080:8080"

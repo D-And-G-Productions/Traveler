@@ -1,0 +1,17 @@
+-- The CXX compiler identification is Clang 20.1.8
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/clang++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Check if compiler accepts -pthread
+-- Check if compiler accepts -pthread - no
+CMake Error at /usr/local/lib/cmake/Crow/Findasio.cmake:46 (message):
+  asio requires Threads, which couldn't be found.
+Call Stack (most recent call first):
+  /usr/share/cmake-3.31/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)
+  /usr/local/lib/cmake/Crow/CrowConfig.cmake:32 (find_dependency)
+  CMakeLists.txt:21 (FIND_PACKAGE)
+
+
+-- Configuring incomplete, errors occurred!

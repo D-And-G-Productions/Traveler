@@ -1,44 +1,51 @@
 #include "JourneyService.hpp"
-#include "repository/JourneyRepository.hpp"
-#include <functional>
+#include "persistence/JourneyStore.hpp"
 
-Journey JourneyService::createJourney(const JourneyCreate &journeyCreate) {
-  Journey created{};
-  std::function<void()> fn = [&] { created = repository->insert(journeyCreate); };
-  unitOfWork->run(fn);
-  return created;
+Journey JourneyService::getJourney(const int64_t journeyId, const int64_t userId) const
+{
+  DBPool::Lease lease{pool->acquire()};
+  pqxx::read_transaction transaction{lease.connection()};
+  JourneyStore journeyStore{transaction};
+  return journeyStore.selectJourney(journeyId, userId);
 }
 
-std::vector<Journey> JourneyService::getJourneys(const int64_t userId) {
-  std::vector<Journey> journeys{};
-  std::function<void()> fn = [&] { journeys = repository->selectByUserId(userId); };
-  unitOfWork->run(fn);
-  return journeys;
+std::vector<Journey> JourneyService::getJourneys(const int64_t userId) const
+{
+  DBPool::Lease lease = pool->acquire();
+  pqxx::read_transaction transaction{lease.connection()};
+  JourneyStore journeyStore{transaction};
+  return journeyStore.selectJourneysByUserId(userId);
 }
 
-// TODO: Descrimination of userId should be done in the journey repository itself.
-Journey JourneyService::getJourney(const int64_t userId, const int64_t journeyId) {
-  Journey journey;
-  std::function<void()> fn = [&] { journey = repository->selectById(journeyId); };
-  unitOfWork->run(fn);
-  if (journey.userId != userId) {
-    throw JourneyNotFoundError("");
-  }
+Journey JourneyService::addJourney(const JourneyCreate &jc)
+{
+  DBPool::Lease lease = pool->acquire();
+  pqxx::work transaction{lease.connection()};
+  JourneyStore journeyStore{transaction};
+  Journey journey = journeyStore.insertJourney(jc);
+  transaction.commit();
   return journey;
 }
 
-// TODO: Descrimination of userId should be done in the journey repository itself.
-Journey JourneyService::updateJourney(
-    const int64_t userId,
-    const int64_t journeyId,
-    const JourneyCreate &journeyCreate
-) {
-  if (userId != journeyCreate.userId) {
-    throw JourneyNotFoundError("");
-  }
+void JourneyService::deleteJourney(const int64_t journeyId, const int64_t userId)
+{
+  DBPool::Lease lease{pool->acquire()};
+  pqxx::work transaction{lease.connection()};
+  JourneyStore journeyStore{transaction};
+  journeyStore.deleteJourney(journeyId, userId);
+  transaction.commit();
+}
 
-  Journey updatedJourney;
-  std::function<void()> fn = [&] { updatedJourney = repository->update(journeyId, journeyCreate); };
-  unitOfWork->run(fn);
-  return updatedJourney;
+Journey JourneyService::updateJourney(
+    const int64_t journeyId,
+    const int64_t userId,
+    const JourneyUpdate &ju
+)
+{
+  DBPool::Lease lease = pool->acquire();
+  pqxx::work transaction{lease.connection()};
+  JourneyStore journeyStore{transaction};
+  Journey journey = journeyStore.updateJourney(journeyId, userId, ju);
+  transaction.commit();
+  return journey;
 }

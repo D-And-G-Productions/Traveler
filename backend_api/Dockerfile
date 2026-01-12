@@ -1,19 +1,30 @@
-FROM ubuntu:25.10 AS crow-base
+ARG UBUNTU_VERSION=24.04
+
+# -----------------------------
+# 1) Build stage (compile)
+# -----------------------------
+FROM ubuntu:${UBUNTU_VERSION} AS build
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   ca-certificates \
   git \
+  curl \
   build-essential \
   cmake \
   ninja-build \
   pkg-config \
   libasio-dev \
-  zlib1g-dev \
   libssl-dev \
+  zlib1g-dev \
+  libpqxx-dev \
+  libpq-dev \
+  postgresql-client \
   && rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/CrowCpp/Crow.git /tmp/Crow \
-  && cmake -S /tmp/Crow -B /tmp/Crow/build \
+# Install Crow (needed because you use find_package(Crow CONFIG REQUIRED))
+RUN git clone --depth 1 https://github.com/CrowCpp/Crow.git /tmp/Crow \
+  && cmake -S /tmp/Crow -B /tmp/Crow/build -G Ninja \
   -DCROW_BUILD_EXAMPLES=OFF \
   -DCROW_BUILD_TESTS=OFF \
   -DCMAKE_BUILD_TYPE=Release \
@@ -21,31 +32,33 @@ RUN git clone https://github.com/CrowCpp/Crow.git /tmp/Crow \
   && cmake --install /tmp/Crow/build \
   && rm -rf /tmp/Crow
 
-FROM crow-base AS dev
+WORKDIR /src
+COPY . .
+
+# Build everything (including tests)
+RUN cmake -S . -B build -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DWEBSERVER_BUILD_TESTS=ON \
+  && cmake --build build
+
+# -----------------------------
+# 2) Test stage (run tests)
+# -----------------------------
+FROM ubuntu:${UBUNTU_VERSION} AS test
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Runtime deps for your binaries + ctest runner
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  npm \
+  ca-certificates \
+  cmake \
+  libpqxx-dev \
+  libpq-dev \
+  libssl-dev \
+  zlib1g-dev \
   && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  curl \
-  xz-utils \
-  python3 \
-  python3-venv \
-  python3-pip \
-  unzip \
-  build-essential \
-  ripgrep \
-  clang-format \
-  && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY --from=build /src/build /src/build
 
-RUN curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz \
-  && rm -rf /opt/nvim-linux-x86_64 \
-  && tar -C /opt -xzf nvim-linux-x86_64.tar.gz
+CMD ["bash", "-lc", "set -euo pipefail; cd /src/build; ctest"]
 
-RUN git clone https://github.com/LazyVim/starter ~/.config/nvim
-
-ENV PATH="/opt/nvim-linux-x86_64/bin:${PATH}"
-
-WORKDIR /workspace/

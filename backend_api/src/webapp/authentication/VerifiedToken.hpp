@@ -1,12 +1,12 @@
-#include <cstdint>
+#pragma once
+
 #include <string>
 #include <vector>
 
-using std::string, std::vector;
-
-struct VerifiedToken {
-  string sub;
-  string issuer;
-  vector<string> scopes;
-  vector<string> groups;
+struct Verification
+{
+  std::string subject;
+  std::string issuer;
+  std::vector<std::string> scopes;
+  std::vector<std::string> groups;
 };
