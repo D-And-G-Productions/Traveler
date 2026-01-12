@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e
+
+SCRIPT_DIRECTORY="$(dirname "$0")"
+PARENT_DIRECTORY="$SCRIPT_DIRECTORY/.."
+cd "$PARENT_DIRECTORY"
+
+psql "$DATABASE_URL?sslmode=disable" -v ON_ERROR_STOP=1 -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public"

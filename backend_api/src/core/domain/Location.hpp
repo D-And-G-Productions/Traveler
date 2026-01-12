@@ -2,7 +2,9 @@
 
 #include <string>
 
-struct Location {
+struct Location
+{
+  int64_t id;
   std::string label;
   double latitude;
   double longitude;

@@ -2,7 +2,8 @@
 
 #include <string>
 
-struct UserUpdate {
+struct UserUpdate
+{
   std::string name;
   std::string telephone;
 };

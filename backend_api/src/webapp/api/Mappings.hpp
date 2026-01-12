@@ -1,68 +1,33 @@
 #pragma once
 
-#include "api/dto/JourneyCreateRequest.hpp"
-#include "api/dto/JourneyResponse.hpp"
-#include "api/dto/UserReponse.hpp"
+#include "api/dto/JourneyCreateRequestContract.hpp"
+#include "api/dto/JourneyResponseContract.hpp"
+#include "api/dto/JourneyUpdateRequest.hpp"
+#include "api/dto/UserReponseContract.hpp"
 #include "domain/Journey.hpp"
 #include "domain/JourneyCreate.hpp"
+#include "domain/JourneyUpdate.hpp"
 #include "domain/Location.hpp"
+#include "domain/LocationCreate.hpp"
 #include "domain/User.hpp"
 #include <cstdint>
 
-inline UserResponse toResponse(const User &user) {
-  return UserResponse{.id = user.id, .name = user.name, .telephone = user.telephone};
-}
+namespace ContractMappings
+{
+UserResponseContract toUserResponseContract(const User &u);
 
-inline JourneyCreate toJourneyCreate(const int64_t userId, const JourneyCreateRequest &jcr) {
-  return JourneyCreate{
-      .userId = userId,
-      .name = jcr.name,
-      .source = jcr.source,
-      .destination = jcr.destination,
-      .arrivalTime = jcr.arrivalTime,
-      .mode = jcr.mode
-  };
-}
+LocationCreate toLocationCreate(const LocationCreateRequestContract &l);
 
-inline LocationResponse toLocationResponse(const Location &location) {
-  return LocationResponse{
-      .label = location.label,
-      .latitude = location.latitude,
-      .longitude = location.longitude,
-  };
-}
+JourneyCreate toJourneyCreate(const int64_t userId, const JourneyCreateRequestContract &j);
 
-inline JourneyResponse toJourneyResponse(const Journey &journey) {
-  return JourneyResponse{
-      .id = journey.id,
-      .createdAt = journey.createdAt,
-      .updatedAt = journey.updatedAt,
-      .name = journey.name,
-      .source = toLocationResponse(journey.source),
-      .destination = toLocationResponse(journey.destination),
-      .arrivalTime = journey.arrivalTime,
-      .mode = journey.mode,
-  };
-}
+LocationResponseContract toLocationResponseContract(const Location &l);
 
-inline Journey toJourney(const int64_t &id_, const JourneyCreate &journeyCreate) {
-  return Journey{
-      .id = id_,
-      .userId = journeyCreate.userId,
-      .createdAt = "PLACEHOLDER_TIME",
-      .updatedAt = "PLACEHOLDER_TIME",
-      .name = journeyCreate.name,
-      .source = journeyCreate.source,
-      .destination = journeyCreate.destination,
-      .arrivalTime = journeyCreate.arrivalTime,
-      .mode = journeyCreate.mode,
-  };
-}
+JourneyResponseContract toJourneyResponseContract(const Journey &j);
 
-inline UserResponse toUserResponse(const User &user) {
-  return UserResponse{
-      .id = user.id,
-      .name = user.name,
-      .telephone = user.telephone,
-  };
-}
+LocationUpdate toLocationUpdate(LocationUpdateRequestContract &l);
+
+std::optional<LocationUpdate>
+toOptionalLocationUpdate(std::optional<LocationUpdateRequestContract> &l);
+
+JourneyUpdate toJourneyUpdate(JourneyUpdateRequestContract &j);
+} // namespace ContractMappings

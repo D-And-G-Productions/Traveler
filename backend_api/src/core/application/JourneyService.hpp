@@ -1,27 +1,23 @@
 #pragma once
-#include "application/UnitOfWork.hpp"
+
+#include "domain/Journey.hpp"
 #include "domain/JourneyCreate.hpp"
-#include "repository/JourneyRepository.hpp"
+#include "domain/JourneyUpdate.hpp"
+#include "persistence/DBPool.hpp"
 #include <cstdint>
-#include <memory>
+#include <vector>
 
-class JourneyService {
+class JourneyService
+{
 public:
-  JourneyService(
-      std::shared_ptr<UnitOfWork> unitOfWork_,
-      std::shared_ptr<JourneyRepository> repository_
-  ) : unitOfWork(std::move(unitOfWork_)), repository(std::move(repository_)) {}
+  JourneyService(std::shared_ptr<DBPool> p) : pool(std::move(p)) {}
 
-  Journey createJourney(const JourneyCreate &journeyCreate);
-
-  std::vector<Journey> getJourneys(const int64_t userId);
-
-  Journey getJourney(const int64_t userId, const int64_t journeyId);
-
-  Journey
-  updateJourney(const int64_t userId, const int64_t journeyId, const JourneyCreate &journeyCreate);
+  Journey getJourney(const int64_t journeyId, const int64_t userId) const;
+  std::vector<Journey> getJourneys(const int64_t userId) const;
+  Journey addJourney(const JourneyCreate &jc);
+  Journey updateJourney(const int64_t journeyId, const int64_t userId, const JourneyUpdate &ju);
+  void deleteJourney(const int64_t journeyId, const int64_t userId);
 
 private:
-  std::shared_ptr<UnitOfWork> unitOfWork;
-  std::shared_ptr<JourneyRepository> repository;
+  std::shared_ptr<DBPool> pool;
 };

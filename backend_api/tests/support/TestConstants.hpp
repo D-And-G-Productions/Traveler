@@ -2,7 +2,8 @@
 
 #include <string_view>
 
-struct TestConstants {
+struct TestConstants
+{
   TestConstants() = delete;
   static constexpr int TEST_PORT = 45451;
   static constexpr int TIMEOUT_MS = 2000;

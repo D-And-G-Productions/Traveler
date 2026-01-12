@@ -8,3 +8,7 @@ AllowAllParametersOfDeclarationOnNextLine: false
 PenaltyBreakBeforeFirstCallParameter: 1
 BreakTemplateDeclarations: "Yes"
 BreakConstructorInitializers: AfterColon
+BreakBeforeBraces: Allman
+MaxEmptyLinesToKeep: 1
+SeparateDefinitionBlocks: Always
+KeepEmptyLinesAtTheStartOfBlocks: false

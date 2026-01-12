@@ -1,35 +1,51 @@
 #pragma once
 
+#include <optional>
 #include <stdexcept>
 #include <string>
 
-enum Mode { DRIVING, TRANSIT, WALKING, CYCLING };
+enum Mode
+{
+  DRIVING,
+  TRANSIT,
+  WALKING,
+  CYCLING
+};
 
-namespace ModeUtil {
-inline Mode toMode(const std::string &string) {
-  if (string == "driving")
+namespace ModeUtil
+{
+inline Mode toMode(const std::string &string)
+{
+  if (string == "DRIVING")
     return Mode::DRIVING;
-  if (string == "transit")
+  if (string == "TRANSIT")
     return Mode::TRANSIT;
-  if (string == "walking")
+  if (string == "WALKING")
     return Mode::WALKING;
-  if (string == "cycling")
+  if (string == "CYCLING")
     return Mode::CYCLING;
   throw std::invalid_argument("Unknown mode: " + string);
 }
 
-inline std::string toString(const Mode mode) {
-  switch (mode) {
+inline std::string toString(const Mode mode)
+{
+  switch (mode)
+  {
   case Mode::DRIVING:
-    return "driving";
+    return "DRIVING";
   case Mode::TRANSIT:
-    return "transit";
+    return "TRANSIT";
   case Mode::WALKING:
-    return "walking";
+    return "WALKING";
   case Mode::CYCLING:
-    return "cycling";
+    return "CYCLING";
   default:
     throw std::invalid_argument("Unknown mode");
   }
+}
+
+inline std::optional<std::string> toOptionalString(const std::optional<Mode> &mode)
+{
+  return mode ? std::optional<std::string>(ModeUtil::toString(*mode)) : std::nullopt;
 }
 } // namespace ModeUtil

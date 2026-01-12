@@ -5,7 +5,8 @@
 #include <cstdint>
 #include <string>
 
-struct Journey {
+struct Journey
+{
 public:
   int64_t id;
   int64_t userId;

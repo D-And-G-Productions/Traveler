@@ -1,16 +1,17 @@
 #pragma once
 
-#include "domain/Location.hpp"
+#include "domain/LocationCreate.hpp"
 #include "domain/Mode.hpp"
 #include <cstdint>
 
 using std::string;
 
-struct JourneyCreate {
+struct JourneyCreate
+{
   int64_t userId;
   string name;
-  Location source;
-  Location destination;
+  LocationCreate source;
+  LocationCreate destination;
   string arrivalTime;
   Mode mode;
 };

@@ -1,15 +1,17 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 #include <string>
 
 using std::string;
 
-struct User {
+struct User
+{
   int64_t id;
-  string sub;
+  string subject;
   string createdAt;
   string updatedAt;
-  string name;
-  string telephone;
+  std::optional<string> name;
+  std::optional<string> telephone;
 };

@@ -1,27 +1,21 @@
 #pragma once
 
+#include "app/App.hpp"
+#include "http/controllers/HealthController.hpp"
+#include "http/controllers/JourneyController.hpp"
+#include "http/controllers/MeController.hpp"
+#include "persistence/DBPool.hpp"
+
 #include <atomic>
-#include <crow.h>
-#include <crow/app.h>
-#include <crow/http_request.h>
-#include <crow/http_response.h>
 #include <memory>
+#include <optional>
 #include <string>
+#include <utility>
 
-using std::shared_ptr;
-
-template <typename... Middlewares>
-class Server {
+class Server
+{
 public:
-  const std::string ADDRESS;
-  const int PORT;
-
-protected:
-  crow::App<Middlewares...> application;
-  std::atomic_bool running{true};
-
-public:
-  Server(const std::string &address, const int &port) : ADDRESS(address), PORT(port) {}
+  explicit Server(std::string dbUrl) : databaseUrl(std::move(dbUrl)) {}
 
   Server(const Server &) = delete;
 
@@ -29,24 +23,43 @@ public:
 
   virtual ~Server() = default;
 
-  virtual void stop() = 0;
+  bool isRunning() const noexcept;
 
-  virtual void start() = 0;
+  void initialise();
 
-  void initialise() {
-    setupRepositories();
-    setupMiddleware();
-    setupControllers();
-    registerRoutes();
-    application.validate();
-  }
+  void start();
+
+  void stop() noexcept;
 
 protected:
-  virtual void setupRepositories() = 0;
+  std::shared_ptr<DBPool> pool;
+  std::shared_ptr<TokenVerifier> tokenVerifier;
 
-  virtual void setupMiddleware() = 0;
+  TravelerApp &app();
 
-  virtual void setupControllers() = 0;
+  virtual std::shared_ptr<TokenVerifier> produceTokenVerifier() = 0;
 
-  virtual void registerRoutes() = 0;
+  virtual void configureApp(TravelerApp & /*app*/);
+
+  virtual void runApp(TravelerApp &app);
+
+  virtual void afterStop() noexcept;
+
+private:
+  static constexpr int DEFAULT_PORT = 18080;
+  static constexpr int POOL_SIZE = 3;
+  std::atomic_bool running{false};
+  std::string databaseUrl;
+  std::optional<TravelerApp> application;
+  std::shared_ptr<HealthController> healthController;
+  std::shared_ptr<MeController> meController;
+  std::shared_ptr<JourneyController> journeyController;
+
+  void requireInitialised() const;
+
+  void setupMiddleware();
+
+  void setupControllers();
+
+  void registerRoutes();
 };

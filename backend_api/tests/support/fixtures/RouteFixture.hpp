@@ -1,51 +1,62 @@
 #pragma once
 
-#include "domain/JourneyCreate.hpp"
-#include "domain/UserUpdate.hpp"
-#include "support/TestServer.hpp"
-#include "support/mocks/MockTokenVerifier.hpp"
+#include "TestCommon.hpp"
+#include "TestConstants.hpp"
+#include "TestServer.hpp"
+#include "TestUser.hpp"
+#include <cpr/response.h>
+#include <format>
 #include <gtest/gtest.h>
+#include <pqxx/pqxx>
 #include <string>
+#include <string_view>
 
-struct TestUser {
-  std::string token;
-  std::string sub;
-  User user;
-};
-
-class RouteFixture : public ::testing::Test {
-public:
-  std::string url;
+class RouteFixture : public ::testing::Test
+{
+protected:
   TestUser testUser;
-  std::unique_ptr<TestServer> testServer;
 
-  TestUser createTestUser(std::string name) {
-    string token = std::to_string(userTokenCounter++);
-    VerifiedToken verifiedToken = testServer->mockTokenVerifier->verifyAccessToken(token);
-    string subject = verifiedToken.sub;
-    User user = testServer->userRepo->insert(subject);
-    UserUpdate userUpdate{.name = name};
-    user = testServer->userRepo->update(user.id, userUpdate);
-    return TestUser{.token = token, .sub = subject, .user = user};
+  static void SetUpTestSuite()
+  {
+    serverUrl_ =
+        std::format("http://{}:{}", TestConstants::LOCAL_ADDRESS, TestConstants::TEST_PORT);
+
+    server = std::make_unique<TestServer>(TestCommon::requireEnv("DATABASE_URL"));
+    server->initialise();
+    server->start();
   }
 
-  Journey createJourney(JourneyCreate &journeyCreate) {
-    return testServer->journeyRepo->insert(journeyCreate);
+  static void TearDownTestSuite()
+  {
+    if (server)
+    {
+      server->stop();
+      server.reset();
+    }
   }
+
+  void SetUp() override { testUser = createTestUser(); }
+
+  void TearDown() override { resetDatabase(); }
+
+  static void resetDatabase() { TestCommon::resetDatabase(); }
+
+  static TestUser createTestUser()
+  {
+    const std::string token = std::to_string(tokenCount++);
+    return TestCommon::createTestUser(token);
+  }
+
+  cpr::Header buildAuthorisationHeader(const std::string_view token)
+  {
+    std::string bearer = std::format("Bearer {}", token);
+    return {{"Authorization", bearer}};
+  }
+
+  static const std::string &serverUrl() { return serverUrl_; }
 
 protected:
-  int userTokenCounter{0};
-
-  void SetUp() override {
-    testServer = std::make_unique<TestServer>();
-    url = std::format("http://{}:{}", testServer->ADDRESS, testServer->PORT);
-    testServer->initialise();
-    testServer->start();
-    testUser = createTestUser("TEST_USER");
-  }
-
-  void TearDown() override {
-    testServer->stop();
-    testServer.reset();
-  }
+  inline static std::unique_ptr<TestServer> server{};
+  inline static std::string serverUrl_{};
+  inline static int tokenCount{0};
 };

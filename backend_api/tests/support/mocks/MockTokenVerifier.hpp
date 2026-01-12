@@ -1,23 +1,33 @@
 #pragma once
 
+#include "TestCommon.hpp"
 #include "authentication/TokenVerifier.hpp"
+#include "persistence/DBPool.hpp"
+#include "persistence/StoreErrors.hpp"
+#include "persistence/UserStore.hpp"
+#include <format>
 #include <string_view>
 
 using std::string;
 using std::string_view;
 
-class MockTokenVerifier : public TokenVerifier {
+class MockTokenVerifier : public TokenVerifier
+{
 public:
-  void acceptAll() { isRejecting = false; }
-
-  void rejectAll() { isRejecting = true; }
-
-  VerifiedToken verifyAccessToken(const std::string &tokenAsSub) const override {
-    if (isRejecting)
-      throw TokenVerificationError{"Invalid Error"};
-    return VerifiedToken{.sub = tokenAsSub};
+  // TODO: Implement using a UserService.
+  Verification verifyAccessToken(const std::string &token) const override
+  {
+    try
+    {
+      pqxx::connection conn{TestCommon::testDBUrl()};
+      pqxx::read_transaction transaction{conn};
+      UserStore userStore{transaction};
+      User user = userStore.selectUser(token);
+      return {.subject = token};
+    }
+    catch (UserDoesNotExist &)
+    {
+      throw TokenVerificationError(std::format("Token '{}' rejected.", token));
+    }
   }
-
-private:
-  bool isRejecting{false};
 };
