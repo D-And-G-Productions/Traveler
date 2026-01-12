@@ -12,9 +12,9 @@ void requireJourneyIsFound(const pqxx::result &r, const int64_t journeyId, const
 {
   if (r.empty())
   {
-    const std::string errorMessage =
+    const std::string message =
         std::format("Journey with id '{}' AND user_id '{}' not found.", journeyId, userId);
-    throw JourneyNotFoundError(errorMessage);
+    throw JourneyNotFoundError(message);
   }
 }
 
@@ -22,8 +22,8 @@ void requireJourneyIsFound(const pqxx::result &r, const int64_t journeyId)
 {
   if (r.empty())
   {
-    const std::string errorMessage = std::format("Journey with id '{}' not found.", journeyId);
-    throw JourneyNotFoundError(errorMessage);
+    const std::string message = std::format("Journey with id '{}' not found.", journeyId);
+    throw JourneyNotFoundError(message);
   }
 }
 

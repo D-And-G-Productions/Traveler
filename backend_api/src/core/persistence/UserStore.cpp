@@ -30,8 +30,8 @@ void requireUserIsFound(const pqxx::result &result, const std::string_view subje
 {
   if (result.empty())
   {
-    const std::string errorMessage = std::format("User with subject '{}' not found", subject);
-    throw UserDoesNotExist(errorMessage);
+    const std::string message = std::format("User with subject '{}' not found", subject);
+    throw UserDoesNotExist(message);
   }
 }
 
@@ -39,8 +39,8 @@ void requireUserIsFound(const pqxx::result &result, const std::int64_t id)
 {
   if (result.empty())
   {
-    const std::string errorMessage = std::format("User with id '{}' not found", id);
-    throw UserDoesNotExist(errorMessage);
+    const std::string message = std::format("User with id '{}' not found", id);
+    throw UserDoesNotExist(message);
   }
 }
 } // namespace
