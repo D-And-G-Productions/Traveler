@@ -42,7 +42,7 @@ Journey TestServer::journeyFromDB(const int64_t journeyId)
 
 std::shared_ptr<TokenVerifier> TestServer::produceTokenVerifier()
 {
-  return std::make_shared<MockTokenVerifier>();
+  return std::make_shared<MockTokenVerifier>(pool);
 }
 
 void TestServer::configureApp(TravelerApp &app)

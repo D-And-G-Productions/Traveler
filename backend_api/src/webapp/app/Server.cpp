@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include "persistence/EnvVariables.hpp"
 
 TravelerApp &Server::app()
 {
@@ -18,7 +19,7 @@ bool Server::isRunning() const noexcept { return running.load(); }
 
 void Server::initialise()
 {
-  pool = std::make_shared<DBPool>(databaseUrl, POOL_SIZE);
+  pool = produceDBPool();
   application.emplace();
 
   setupMiddleware();
@@ -34,8 +35,8 @@ void Server::setupMiddleware()
   tokenVerifier = produceTokenVerifier();
 
   auto userService = std::make_shared<UserService>(pool);
-  AuthMiddleware &auth = application->get_middleware<AuthMiddleware>();
-  auth.setDeps(tokenVerifier, std::move(userService));
+  AuthMiddleware &authMiddleware = application->get_middleware<AuthMiddleware>();
+  authMiddleware.setDeps(tokenVerifier, std::move(userService));
 }
 
 void Server::setupControllers()
@@ -83,3 +84,8 @@ void Server::stop() noexcept
 }
 
 void Server::afterStop() noexcept {}
+
+std::shared_ptr<DBPool> Server::produceDBPool()
+{
+  return std::make_shared<DBPool>(EnvVariables::getVar("DATABASE_URL"), POOL_SIZE);
+};

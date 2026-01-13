@@ -1,12 +1,12 @@
 #pragma once
 
-#include "TestCommon.hpp"
+#include "application/UserService.hpp"
 #include "authentication/TokenVerifier.hpp"
 #include "persistence/DBPool.hpp"
 #include "persistence/StoreErrors.hpp"
-#include "persistence/UserStore.hpp"
-#include <format>
+#include <memory>
 #include <string_view>
+#include <utility>
 
 using std::string;
 using std::string_view;
@@ -14,20 +14,22 @@ using std::string_view;
 class MockTokenVerifier : public TokenVerifier
 {
 public:
-  // TODO: Implement using a UserService.
+  MockTokenVerifier(std::shared_ptr<DBPool> dbPool) : pool(std::move(dbPool)) {}
+
   Verification verifyAccessToken(const std::string &token) const override
   {
     try
     {
-      pqxx::connection conn{TestCommon::testDBUrl()};
-      pqxx::read_transaction transaction{conn};
-      UserStore userStore{transaction};
-      User user = userStore.selectUser(token);
-      return {.subject = token};
+      UserService service{pool};
+      User existingUser = service.getUser(token);
+      return {.subject = existingUser.subject};
     }
     catch (UserDoesNotExist &)
     {
-      throw TokenVerificationError(std::format("Token '{}' rejected.", token));
+      throw TokenVerificationError(token);
     }
   }
+
+private:
+  std::shared_ptr<DBPool> pool;
 };

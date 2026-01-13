@@ -32,6 +32,7 @@ public:
   void stop() noexcept;
 
 protected:
+  static constexpr int POOL_SIZE = 3;
   std::shared_ptr<DBPool> pool;
   std::shared_ptr<TokenVerifier> tokenVerifier;
 
@@ -39,7 +40,9 @@ protected:
 
   virtual std::shared_ptr<TokenVerifier> produceTokenVerifier() = 0;
 
-  virtual void configureApp(TravelerApp & /*app*/);
+  virtual std::shared_ptr<DBPool> produceDBPool();
+
+  virtual void configureApp(TravelerApp &);
 
   virtual void runApp(TravelerApp &app);
 
@@ -47,7 +50,6 @@ protected:
 
 private:
   static constexpr int DEFAULT_PORT = 18080;
-  static constexpr int POOL_SIZE = 3;
   std::atomic_bool running{false};
   std::string databaseUrl;
   std::optional<TravelerApp> application;

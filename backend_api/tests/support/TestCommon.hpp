@@ -1,29 +1,20 @@
 #pragma once
 
+#include "TestConstants.hpp"
 #include "TestUser.hpp"
+#include "application/UserService.hpp"
 #include "persistence/DBPool.hpp"
-#include "persistence/UserStore.hpp"
 #include <cstdlib>
+#include <memory>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
 namespace TestCommon
 {
-static std::string requireEnv(const char *key)
-{
-  const char *variable = std::getenv(key);
-  if (variable && *variable)
-  {
-    return std::string{variable};
-  }
-  throw std::runtime_error(std::string{"Missing env variable: "} + key);
-}
-
-static std::string testDBUrl() { return requireEnv("DATABASE_URL"); }
-
 static void resetDatabase()
 {
-  pqxx::connection conn{testDBUrl()};
+  pqxx::connection conn{TestConstants::TEST_DATABASE_URL()};
   pqxx::work tx{conn};
   std::string query = R"SQL(
       TRUNCATE locations RESTART IDENTITY CASCADE;
@@ -33,14 +24,12 @@ static void resetDatabase()
   tx.commit();
 }
 
-static User createUserFromSub(const std::string &subject)
+static User createUserFromSub(const std::string_view subject)
 {
-  pqxx::connection conn{testDBUrl()};
-  pqxx::work transaction{conn};
-  UserStore userStore{transaction};
-  User user = userStore.insertUserBySubject(subject);
-  transaction.commit();
-  return user;
+  std::shared_ptr<DBPool> pool = std::make_shared<DBPool>(TestConstants::TEST_DATABASE_URL(), 1);
+  UserService service{pool};
+  User createdUser = service.insertUser(subject);
+  return createdUser;
 }
 
 static TestUser createTestUser(const std::string token)
