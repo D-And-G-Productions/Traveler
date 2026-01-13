@@ -42,3 +42,11 @@ GTEST_DISCOVER_TESTS(TestMeGet)
 ADD_EXECUTABLE(AuthMiddlewareTests ./test_middleware/TestAuthMiddleware.cpp)
 TARGET_LINK_LIBRARIES(AuthMiddlewareTests PRIVATE TestsSupport)
 GTEST_DISCOVER_TESTS(AuthMiddlewareTests)
+
+ADD_EXECUTABLE(IntegrationTests ./test_integration/FirebaseAuthTest.cpp) 
+
+TARGET_LINK_LIBRARIES(IntegrationTests 
+    PRIVATE 
+    WebserverLib # Your API code
+    cpr::cpr     # Network library
+)
