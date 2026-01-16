@@ -1,3 +1,0 @@
-ARG DEV_BASE_IMAGE=traveler/dev-base:local
-FROM ${DEV_BASE_IMAGE}
-WORKDIR /workspace/
