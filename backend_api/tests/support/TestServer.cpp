@@ -13,7 +13,7 @@ User TestServer::createUserFromToken(const std::string &token)
   pqxx::work tx{db.connection()};
 
   UserStore userStore{tx};
-  User user = userStore.insertUserBySubject(verification.subject);
+  User user = userStore.insertUser(verification.subject);
 
   tx.commit();
   return user;

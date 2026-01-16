@@ -31,6 +31,7 @@ GTEST_DISCOVER_TESTS(AuthMiddlewareTests)
 
 ADD_EXECUTABLE(PersistenceTests
   ./test_persistence/LibpqxxExplorationTests.cpp
+  ./test_persistence/TestUserStore.cpp
 )
 TARGET_LINK_LIBRARIES(PersistenceTests PRIVATE TestsSupport)
 GTEST_DISCOVER_TESTS(PersistenceTests)

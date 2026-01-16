@@ -24,5 +24,5 @@ User UserService::insertUser(const std::string_view subject)
   pqxx::work transaction{lease.connection()};
   UserStore userStore{transaction};
   transaction.commit();
-  return userStore.insertUserBySubject(subject);
+  return userStore.insertUser(subject);
 };

@@ -11,5 +11,5 @@ struct TestConstants
   static constexpr std::string_view LOCAL_HOST = "http://127.0.0.1";
   static constexpr std::string_view LOCAL_ADDRESS = "127.0.0.1";
 
-  static const std::string TEST_DATABASE_URL() { return EnvVariables::getVar("DATABASE_URL"); }
+  static const std::string TEST_DATABASE_URL() { return EnvVariables::getVar("TEST_DATABASE_URL"); }
 };
