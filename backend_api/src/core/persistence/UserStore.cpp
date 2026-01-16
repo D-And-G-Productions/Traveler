@@ -1,5 +1,6 @@
 #include "UserStore.hpp"
 #include "Queries.hpp"
+#include "persistence/DBPool.hpp"
 #include "persistence/StoreErrors.hpp"
 #include <cstdint>
 #include <format>
@@ -63,11 +64,23 @@ User UserStore::selectUser(const std::int64_t id) const
   return userFromRow(row);
 }
 
-User UserStore::insertUserBySubject(const std::string_view subject)
+User UserStore::insertUser(const std::string_view subject)
 {
-  pqxx::params parameters = {subject};
-  const pqxx::result result = transaction.exec(Queries::insertUserBySubQuery, parameters);
-  requireUserIsFound(result, subject);
+  const pqxx::result result = executeInsertUser(subject);
   pqxx::row row = result.one_row();
   return userFromRow(row);
+}
+
+pqxx::result UserStore::executeInsertUser(const std::string_view subject)
+{
+  try
+  {
+    pqxx::params parameters = {subject};
+    return transaction.exec(Queries::insertUserBySubQuery, parameters);
+  }
+  catch (pqxx::unique_violation &)
+  {
+    const std::string message = std::format("User with subject '{}' already exists", subject);
+    throw UserAlreadyExists(message);
+  }
 }

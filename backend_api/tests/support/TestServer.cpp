@@ -13,7 +13,7 @@ User TestServer::createUserFromToken(const std::string &token)
   pqxx::work tx{db.connection()};
 
   UserStore userStore{tx};
-  User user = userStore.insertUserBySubject(verification.subject);
+  User user = userStore.insertUser(verification.subject);
 
   tx.commit();
   return user;
@@ -42,7 +42,7 @@ Journey TestServer::journeyFromDB(const int64_t journeyId)
 
 std::shared_ptr<TokenVerifier> TestServer::produceTokenVerifier()
 {
-  return std::make_shared<MockTokenVerifier>();
+  return std::make_shared<MockTokenVerifier>(pool);
 }
 
 void TestServer::configureApp(TravelerApp &app)

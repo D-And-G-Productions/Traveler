@@ -8,7 +8,13 @@ class UserStore : public Store
 {
 public:
   using Store::Store;
+
   User selectUser(const std::string_view subject) const;
+
   User selectUser(const std::int64_t id) const;
-  User insertUserBySubject(const std::string_view subject);
+
+  User insertUser(const std::string_view subject);
+
+private:
+  pqxx::result executeInsertUser(const std::string_view subject);
 };

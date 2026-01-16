@@ -14,4 +14,6 @@ struct User
   string updatedAt;
   std::optional<string> name;
   std::optional<string> telephone;
+
+  bool operator==(const User &) const = default;
 };

@@ -21,7 +21,7 @@ protected:
     serverUrl_ =
         std::format("http://{}:{}", TestConstants::LOCAL_ADDRESS, TestConstants::TEST_PORT);
 
-    server = std::make_unique<TestServer>(TestCommon::requireEnv("DATABASE_URL"));
+    server = std::make_unique<TestServer>(TestConstants::TEST_DATABASE_URL());
     server->initialise();
     server->start();
   }
